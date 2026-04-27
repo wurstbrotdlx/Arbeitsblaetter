@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Arbeitsablaufplan – AES Klasse 8/9 | Merian GMS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0e10; --card:#1a1a1f; --raised:#222228;
+  --accent:#00b4f0; --accent-dim:rgba(0,180,240,0.14); --accent-dim2:rgba(0,180,240,0.07);
+  --text:#e8f0f8; --muted:#a0b0c0;
+  --border:rgba(0,180,240,0.20); --border-sub:rgba(255,255,255,0.07);
+  --success:#4ecdc4; --success-dim:rgba(78,205,196,0.13);
+  --warn:#ffd166;   --warn-dim:rgba(255,209,102,0.13);
+  --danger:#ff6b6b; --danger-dim:rgba(255,107,107,0.13);
+  --par-bg:rgba(78,205,196,0.10);
+  --step1:#00b4f0; --step2:#4ecdc4; --step3:#ffd166; --step4:#f4a261; --step5:#a29bfe;
+  --fs:17px; --fs-sm:14px; --fs-lbl:11px; --touch:48px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;font-size:var(--fs);overflow-x:hidden;-webkit-text-size-adjust:100%;}
+
+/* ── Header ── */
+.app-header{display:flex;align-items:center;gap:14px;padding:22px 20px 0;max-width:900px;margin:0 auto;}
+.badge{background:var(--accent-dim);border:1px solid var(--border);border-radius:10px;padding:9px 15px;font-family:'Space Grotesk',sans-serif;font-size:0.68rem;font-weight:700;color:var(--accent);letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.header-text h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.05rem,3vw,1.3rem);font-weight:700;line-height:1.2;}
+.header-text h1 em{font-style:normal;color:var(--accent);}
+.header-text .sub{font-size:var(--fs-sm);color:var(--muted);margin-top:3px;}
+
+/* ── Tab bar – pill style, very visible ── */
+.tab-bar-wrap{max-width:900px;margin:18px auto 0;padding:0 20px;}
+.tab-bar{display:flex;background:var(--raised);border:1px solid var(--border);border-radius:14px;padding:5px;gap:5px;}
+.tab-btn{flex:1;background:transparent;border:none;border-radius:10px;padding:13px 10px;font-family:'Space Grotesk',sans-serif;font-size:0.95rem;font-weight:600;color:var(--muted);cursor:pointer;transition:background .18s,color .18s;display:flex;align-items:center;justify-content:center;gap:8px;min-height:var(--touch);}
+.tab-btn:hover{color:var(--text);background:var(--accent-dim2);}
+.tab-btn.active{background:var(--accent);color:#0e0e10;font-weight:700;}
+
+/* ── Panels ── */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.cw{max-width:900px;margin:0 auto;padding:28px 20px 70px;}
+.slbl{font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:13px;padding-left:2px;}
+
+/* ══ ANLEITUNG ══ */
+.intro-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:28px;font-size:var(--fs);line-height:1.7;color:var(--muted);}
+.intro-box strong{color:var(--text);}
+.intro-box .big{display:block;font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;}
+.col-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+@media(max-width:520px){.col-preview{grid-template-columns:1fr 1fr;}}
+.col-chip{background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:13px 10px;text-align:center;}
+.col-chip .cn{font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.col-chip .cd{font-size:var(--fs-sm);color:var(--muted);line-height:1.4;}
+.what-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:28px;}
+.what-box p{font-size:var(--fs);color:var(--muted);line-height:1.7;}
+.what-box p strong{color:var(--text);}
+.steps-list{display:flex;flex-direction:column;gap:14px;margin-bottom:28px;}
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;}
+.step-stripe{width:5px;flex-shrink:0;}
+.step-content{padding:18px 20px;flex:1;}
+.step-header{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.step-num{font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:.05em;white-space:nowrap;}
+.step-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--text);}
+.step-body{font-size:var(--fs);color:var(--muted);line-height:1.7;}
+.step-body strong{color:var(--text);}
+.tip-box{background:var(--warn-dim);border:1px solid rgba(255,209,102,.25);border-radius:10px;padding:13px 16px;font-size:var(--fs-sm);color:#d4aa50;margin-top:12px;line-height:1.65;display:flex;gap:10px;align-items:flex-start;}
+.tip-box .ic{font-size:1rem;margin-top:2px;flex-shrink:0;}
+.tip-box strong{color:var(--warn);}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:480px){.compare-grid{grid-template-columns:1fr;}}
+.good-box{background:var(--success-dim);border:1px solid rgba(78,205,196,.25);border-radius:10px;padding:12px 14px;font-size:var(--fs-sm);color:#6de0d8;line-height:1.6;}
+.good-box .lb{font-family:'Space Grotesk',sans-serif;font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--success);margin-bottom:5px;}
+.bad-box{background:var(--danger-dim);border:1px solid rgba(255,107,107,.2);border-radius:10px;padding:12px 14px;font-size:var(--fs-sm);color:#e08080;line-height:1.6;}
+.bad-box .lb{font-family:'Space Grotesk',sans-serif;font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--danger);margin-bottom:5px;}
+.mini-ex{background:var(--raised);border-radius:10px;padding:14px 16px;margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.mini-ex .exlbl{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-family:'Space Grotesk',sans-serif;}
+.mt{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:520px;}
+.mt th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-family:'Space Grotesk',sans-serif;font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;}
+.mt td{padding:8px 8px;border-bottom:1px solid var(--border-sub);color:var(--text);vertical-align:top;line-height:1.45;}
+.mt td.m{color:var(--muted);font-size:.82rem;}
+.mt tr:last-child td{border-bottom:none;}
+.tag-p{display:inline-block;background:var(--success-dim);border:1px solid rgba(78,205,196,.3);color:var(--success);border-radius:20px;padding:2px 9px;font-size:.7rem;font-weight:600;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+.fb-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:28px;}
+@media(max-width:480px){.fb-grid{grid-template-columns:1fr;}}
+.fb-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.fb-term{font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.fb-def{font-size:var(--fs-sm);color:var(--muted);line-height:1.5;}
+.fb-ex{font-size:.82rem;color:var(--text);margin-top:5px;font-style:italic;}
+.cta-plan{background:var(--accent);color:#0e0e10;border:none;border-radius:14px;padding:16px 36px;font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;display:block;margin:0 auto;min-height:var(--touch);transition:opacity .15s;}
+.cta-plan:hover{opacity:.85;}
+
+/* ══ PLAN TAB ══ */
+.save-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.save-status{font-size:var(--fs-sm);color:var(--muted);display:flex;align-items:center;gap:7px;}
+.save-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;flex-shrink:0;}
+.save-dot.saved{background:var(--success);}
+.save-dot.saving{background:var(--warn);}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+@media(max-width:520px){.meta-grid{grid-template-columns:1fr 1fr;}}
+.meta-field label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;font-family:'Space Grotesk',sans-serif;}
+.meta-field input{width:100%;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs);outline:none;transition:border-color .15s;min-height:var(--touch);}
+.meta-field input:focus{border-color:var(--accent);}
+.rec-toggle{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+.rec-btn{width:100%;background:none;border:none;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs);font-weight:600;text-align:left;min-height:var(--touch);}
+.rec-btn:active{background:var(--accent-dim2);}
+.arr{font-size:.75rem;color:var(--accent);transition:transform .22s;margin-left:8px;}
+.arr.open{transform:rotate(180deg);}
+.rec-body{display:none;padding:0 18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.rec-body.open{display:block;}
+.rt{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:460px;}
+.rt th{font-family:'Space Grotesk',sans-serif;font-size:.67rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.rt td{padding:8px 10px;border-bottom:1px solid var(--border-sub);color:var(--text);vertical-align:top;line-height:1.5;}
+.rt td:first-child{color:var(--muted);}
+.rt td:last-child{color:var(--muted);font-size:.82rem;}
+.rt tr:last-child td{border-bottom:none;}
+.plan-tip{background:var(--warn-dim);border:1px solid rgba(255,209,102,.22);border-radius:10px;padding:13px 16px;font-size:var(--fs-sm);color:#d4aa50;margin-bottom:20px;line-height:1.65;}
+.plan-tip strong{color:var(--warn);}
+
+/* ── PLAN GRID (no <table>) ── */
+.plan-container{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+
+/* 6 columns: nr | zeit | schritt | geraete | hygiene | del */
+.pc-grid{display:grid;grid-template-columns:38px 90px 1fr 190px 165px 44px;}
+@media(max-width:700px){
+  .pc-grid{grid-template-columns:34px 76px 1fr 40px;}
+  .pc-ge,.pc-hy{display:none;}
+}
+
+.plan-hdr{background:var(--raised);border-bottom:2px solid var(--border);}
+.ph{padding:12px 10px;font-family:'Space Grotesk',sans-serif;font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:5px;}
+.ph.cn{color:var(--muted);justify-content:center;}
+
+.plan-row{border-bottom:1px solid var(--border-sub);transition:background .1s;}
+.plan-row:last-child{border-bottom:none;}
+.plan-row.par{background:var(--par-bg);}
+
+/* cells */
+.pc{padding:5px 5px;display:flex;flex-direction:column;justify-content:flex-start;border-right:1px solid var(--border-sub);}
+.pc:last-child{border-right:none;}
+.pc-nr{align-items:center;justify-content:flex-start;padding-top:13px;}
+.pc-del{align-items:center;justify-content:flex-start;padding-top:7px;}
+.nr-lbl{font-family:'Space Grotesk',sans-serif;font-size:.75rem;color:var(--muted);user-select:none;}
+
+/* textarea / input */
+.pi{width:100%;background:transparent;border:none;border-radius:8px;padding:10px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs);outline:none;resize:none;overflow:hidden;line-height:1.5;transition:background .15s;min-height:46px;-webkit-overflow-scrolling:auto;}
+.pi::placeholder{color:var(--muted);opacity:.4;}
+.pi:focus{background:var(--accent-dim2);}
+.zi{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--accent);text-align:center;}
+
+.par-tog{display:flex;align-items:center;gap:7px;padding:4px 8px 8px;cursor:pointer;user-select:none;}
+.par-tog input{width:18px;height:18px;flex-shrink:0;accent-color:var(--success);cursor:pointer;}
+.par-tog span{font-size:var(--fs-sm);color:var(--muted);}
+.par .par-tog span{color:var(--success);}
+
+.del-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.95rem;padding:10px 8px;border-radius:8px;transition:color .15s,background .15s;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;}
+.del-btn:hover{color:var(--danger);background:var(--danger-dim);}
+
+.add-row-btn{background:var(--accent-dim);border:1px dashed var(--border);border-radius:12px;padding:14px;width:100%;color:var(--accent);font-family:'Space Grotesk',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:22px;min-height:var(--touch);}
+.add-row-btn:hover{background:rgba(0,180,240,.22);}
+
+/* tooltip */
+.tt-wrap{position:relative;display:inline-flex;}
+.tt-btn{background:var(--accent-dim);border:1px solid var(--border);border-radius:50%;width:18px;height:18px;font-size:.62rem;font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
+.tt-btn:focus{outline:none;background:rgba(0,180,240,.28);}
+.tt-pop{display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:999;background:#18181d;border:1px solid var(--border);border-radius:11px;padding:13px 15px;width:230px;font-family:'DM Sans',sans-serif;font-size:var(--fs-sm);font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.6);pointer-events:none;}
+.tt-pop strong{color:var(--text);}
+.tt-pop .te{margin-top:7px;}
+.tt-pop .te span{display:block;font-size:.8rem;}
+.tt-pop .te span::before{content:'→ ';color:var(--accent);}
+.tt-btn:hover .tt-pop,.tt-btn:focus .tt-pop{display:block;}
+
+/* check + reflexion */
+.check-grid{display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:17px 19px;margin-bottom:20px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.check-item input{width:20px;height:20px;flex-shrink:0;accent-color:var(--success);cursor:pointer;margin-top:2px;}
+.check-item span{font-size:var(--fs);color:var(--muted);transition:color .15s;line-height:1.5;}
+.check-item input:checked + span{color:var(--text);}
+.reflex-area{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:17px 19px;margin-bottom:20px;}
+.reflex-area textarea{width:100%;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs);resize:vertical;min-height:90px;outline:none;margin-top:10px;transition:border-color .15s;line-height:1.55;}
+.reflex-area textarea:focus{border-color:var(--accent);}
+.reflex-area textarea::placeholder{color:var(--muted);opacity:.4;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-p{background:var(--accent);color:#0e0e10;border:none;border-radius:12px;padding:14px 28px;font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .15s;min-height:var(--touch);}
+.btn-p:hover{opacity:.85;}
+.btn-s{background:var(--raised);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:14px 24px;font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .15s;min-height:var(--touch);}
+.btn-s:hover{background:rgba(0,180,240,.1);}
+.btn-d{background:var(--danger-dim);color:var(--danger);border:1px solid rgba(255,107,107,.3);border-radius:12px;padding:14px 20px;font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .15s;margin-left:auto;min-height:var(--touch);}
+.btn-d:hover{background:rgba(255,107,107,.22);}
+
+/* ── Print ── */
+@media print{
+  .tab-bar-wrap,.btn-row,.add-row-btn,.del-btn,.tt-btn,.cta-plan,.save-bar{display:none!important;}
+  .tab-panel{display:block!important;}
+  body{background:#fff!important;color:#111!important;font-size:11pt;padding:0;}
+  :root{--bg:#fff;--card:#f5f7fa;--raised:#ececec;--accent:#006fa8;--accent-dim:#e3f2fb;--accent-dim2:#f0f8ff;--text:#111;--muted:#555;--border:#ccc;--border-sub:#e0e0e0;--success:#2a9d8f;--success-dim:#e6f7f5;--par-bg:#e6f7f5;--warn:#c8960a;--warn-dim:#fdf6e3;--danger:#c0392b;--danger-dim:#fdecea;}
+  .cw{padding:12px 0 24px;max-width:100%;}
+  .rec-body{display:block!important;}
+  .step-card,.plan-row{page-break-inside:avoid;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pi{font-size:10pt;}
+  .pc-grid{grid-template-columns:38px 80px 1fr 165px 145px 0!important;}
+}
+@page{size:A4;margin:1.4cm;}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="badge">Merian GMS · AES</div>
+  <div class="header-text">
+    <h1><em>Arbeitsablaufplan</em> – Bulgursalat</h1>
+    <div class="sub">Anleitung + digitaler Plan &nbsp;·&nbsp; Klasse 8 / 9 &nbsp;·&nbsp; Prüfungsvorbereitung Praxis</div>
+  </div>
+</div>
+
+<div class="tab-bar-wrap">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="btn-guide" onclick="switchTab('guide')">📖 Anleitung</button>
+    <button class="tab-btn" id="btn-plan" onclick="switchTab('plan')">✏️ Mein Plan</button>
+  </div>
+</div>
+
+
+<!-- ══ TAB: ANLEITUNG ══ -->
+<div id="tab-guide" class="tab-panel active">
+<div class="cw">
+
+  <div class="intro-box">
+    <span class="big">Was ist das überhaupt?</span>
+    Ein Arbeitsablaufplan ist wie ein <strong>Drehbuch fürs Kochen</strong>. Du schreibst vorher auf, was du wann tust – damit du nichts vergisst, keine Zeit verschwendest und sicher arbeitest. In der Prüfung wirst du genau das zeigen müssen.
+  </div>
+
+  <div class="slbl">Was gehört in einen Arbeitsablaufplan?</div>
+  <div class="what-box">
+    <p>Ein Arbeitsablaufplan hat immer <strong>vier Spalten</strong>. Jede Zeile ist ein einziger Schritt – nicht mehr.</p>
+    <div class="col-preview">
+      <div class="col-chip"><div class="cn">Zeit</div><div class="cd">Ab wann machst du diesen Schritt?</div></div>
+      <div class="col-chip"><div class="cn">Arbeitsschritt</div><div class="cd">Was genau tust du? Welche Technik?</div></div>
+      <div class="col-chip"><div class="cn">Geräte &amp; Material</div><div class="cd">Was brauchst du dafür?</div></div>
+      <div class="col-chip"><div class="cn">Hygiene / Qualität</div><div class="cd">Was musst du beachten?</div></div>
+    </div>
+  </div>
+
+  <div class="slbl">In 5 Schritten zum fertigen Plan</div>
+  <div class="steps-list">
+
+    <div class="step-card">
+      <div class="step-stripe" style="background:var(--step1)"></div>
+      <div class="step-content">
+        <div class="step-header"><span class="step-num" style="background:rgba(0,180,240,.15);color:var(--step1)">Schritt 1</span><span class="step-title">Lies das Rezept komplett durch</span></div>
+        <div class="step-body">Bevor du irgendetwas aufschreibst: Lies das Rezept <strong>einmal ganz durch</strong>. Überlege: Wie lange dauert das? Gibt es Wartezeiten (Kochen, Quellen, Abkühlen)?
+          <div class="tip-box"><span class="ic">💡</span><div>Wartezeiten sind <strong>Gold</strong>. Während etwas kocht oder quillt, kannst du andere Zutaten vorbereiten – das heißt <strong>Parallelarbeit</strong>.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-stripe" style="background:var(--step2)"></div>
+      <div class="step-content">
+        <div class="step-header"><span class="step-num" style="background:rgba(78,205,196,.15);color:var(--step2)">Schritt 2</span><span class="step-title">Beginne mit Hygiene – immer!</span></div>
+        <div class="step-body">Dein <strong>erster Schritt im Plan</strong> ist immer: Hände waschen, Schürze anlegen, Arbeitsplatz reinigen, alles bereitlegen.
+          <div class="compare-grid">
+            <div class="good-box"><div class="lb">✓ Richtig</div>0:00 – Hände waschen, Schürze anlegen, Arbeitsplatz reinigen, Zutaten bereitlegen.</div>
+            <div class="bad-box"><div class="lb">✗ Falsch</div>0:00 – Zwiebeln schneiden.<br><em>(Hygiene fehlt komplett!)</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-stripe" style="background:var(--step3)"></div>
+      <div class="step-content">
+        <div class="step-header"><span class="step-num" style="background:rgba(255,209,102,.15);color:var(--step3)">Schritt 3</span><span class="step-title">Schritte in richtiger Reihenfolge eintragen</span></div>
+        <div class="step-body"><strong>Ein Schritt = eine Zeile.</strong> Beginne immer mit dem, was am längsten braucht – zuerst den Herd anstellen oder etwas einweichen lassen.
+          <div class="compare-grid">
+            <div class="good-box"><div class="lb">✓ Gut</div>Zeile 3: Möhren in Scheiben (Rondelles) schneiden.<br>Zeile 4: Lauch in Ringe schneiden.</div>
+            <div class="bad-box"><div class="lb">✗ Falsch</div>Zeile 3: Möhren und Lauch schneiden, Gewürze dazugeben, alles umrühren und abschmecken.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-stripe" style="background:var(--step4)"></div>
+      <div class="step-content">
+        <div class="step-header"><span class="step-num" style="background:rgba(244,162,97,.15);color:var(--step4)">Schritt 4</span><span class="step-title">Realistische Zeitangaben schreiben</span></div>
+        <div class="step-body">Hinter jede Zeile kommt: ab <strong>wie vielen Minuten</strong> nach dem Start du diesen Schritt machst. Überlege ehrlich – wie lange brauchst du wirklich dafür?
+          <div class="mini-ex">
+            <div class="exlbl">Beispiel: Einfache Gemüsesuppe</div>
+            <table class="mt">
+              <thead><tr><th style="width:60px">Zeit</th><th>Arbeitsschritt</th><th style="width:115px">Geräte</th><th style="width:115px">Hygiene/Qualität</th></tr></thead>
+              <tbody>
+                <tr><td class="m">0:00</td><td>Hände waschen, Schürze anlegen, Arbeitsplatz reinigen, Zutaten bereitlegen.</td><td class="m">alle Geräte</td><td class="m">pers. Hygiene</td></tr>
+                <tr><td class="m">0:05</td><td>Wasser aufsetzen, zum Kochen bringen.</td><td class="m">Topf, Messbecher</td><td class="m">Herd-Sicherheit</td></tr>
+                <tr><td class="m">0:08</td><td>Möhren schälen, in gleichmäßige Scheiben (Rondelles) schneiden. <span class="tag-p">Parallelarbeit</span></td><td class="m">Schäler, Messer, Brett</td><td class="m">gleichmäßig!</td></tr>
+                <tr><td class="m">0:16</td><td>Lauch waschen, in Ringe schneiden. <span class="tag-p">Parallelarbeit</span></td><td class="m">Messer, Brett</td><td class="m">gut abspülen</td></tr>
+                <tr><td class="m">0:22</td><td>Gemüse ins kochende Wasser, Brühe einrühren, köcheln lassen.</td><td class="m">Kelle, Brühe</td><td class="m">Temperatur</td></tr>
+                <tr><td class="m">0:40</td><td>Garprobe, abschmecken, anrichten.</td><td class="m">Kelle, Teller</td><td class="m">kosten!</td></tr>
+                <tr><td class="m">0:48</td><td>Arbeitsplatz reinigen, Geräte spülen, Hände waschen.</td><td class="m">Spülmittel, Lappen</td><td class="m">Küchenordnung</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tip-box"><span class="ic">⏱️</span><div>Plane lieber etwas <strong>mehr Zeit</strong> ein als zu wenig. Wer zu eng plant, gerät unter Stress.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-stripe" style="background:var(--step5)"></div>
+      <div class="step-content">
+        <div class="step-header"><span class="step-num" style="background:rgba(162,155,254,.15);color:var(--step5)">Schritt 5</span><span class="step-title">Vergiss die letzte Zeile nicht</span></div>
+        <div class="step-body">Die <strong>letzte Zeile</strong> ist immer: Arbeitsplatz reinigen, Geräte spülen, Hände waschen. Auch das gehört zur Prüfung.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slbl">Fachbegriffe, die du kennen musst</div>
+  <div class="fb-grid">
+    <div class="fb-card"><div class="fb-term">Brunoise</div><div class="fb-def">Sehr feine Würfel (ca. 2–3 mm). Für Paprika, Möhren, Zwiebeln.</div><div class="fb-ex">→ "Paprika in feine Würfel (Brunoise) schneiden."</div></div>
+    <div class="fb-card"><div class="fb-term">Rondelles</div><div class="fb-def">Gleichmäßige Scheiben / Ringe. Für Frühlingszwiebeln, Möhren, Zucchini.</div><div class="fb-ex">→ "Frühlingszwiebeln in Ringe (Rondelles) schneiden."</div></div>
+    <div class="fb-card"><div class="fb-term">Parallelarbeit</div><div class="fb-def">Zwei Dinge gleichzeitig: etwas kocht oder quillt, während du schneidest.</div><div class="fb-ex">→ "Während der Bulgur quillt: Gemüse vorbereiten."</div></div>
+    <div class="fb-card"><div class="fb-term">Abschmecken</div><div class="fb-def">Am Ende kosten und prüfen ob Salz, Pfeffer, Säure stimmen.</div><div class="fb-ex">→ "Mit Salz und Pfeffer abschmecken."</div></div>
+    <div class="fb-card"><div class="fb-term">Bereitstellen</div><div class="fb-def">Alle Zutaten und Geräte vor dem Start bereitlegen – spart Zeit!</div><div class="fb-ex">→ "Zutaten und Geräte bereitlegen."</div></div>
+    <div class="fb-card"><div class="fb-term">Garnieren</div><div class="fb-def">Das fertige Gericht hübsch anrichten und dekorieren.</div><div class="fb-ex">→ "Mit Frühlingszwiebeln garnieren."</div></div>
+  </div>
+
+  <button class="cta-plan" onclick="switchTab('plan')">✏️ Jetzt meinen Plan erstellen →</button>
+
+</div>
+</div>
+
+
+<!-- ══ TAB: MEIN PLAN ══ -->
+<div id="tab-plan" class="tab-panel">
+<div class="cw">
+
+  <div class="save-bar">
+    <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">Noch nicht gespeichert</span></div>
+    <div style="font-size:var(--fs-sm);color:var(--muted)">Wird automatisch gespeichert.</div>
+  </div>
+
+  <div class="slbl">Angaben zur Person</div>
+  <div class="meta-grid">
+    <div class="meta-field"><label>Name</label><input type="text" id="metaName" placeholder="Vor- und Nachname" autocomplete="off"></div>
+    <div class="meta-field"><label>Klasse</label><input type="text" id="metaKlasse" placeholder="z. B. 8a" autocomplete="off"></div>
+    <div class="meta-field"><label>Datum</label><input type="date" id="metaDatum"></div>
+  </div>
+
+  <div class="rec-toggle">
+    <button class="rec-btn" onclick="toggleRecipe()">
+      <span id="recLbl">📋 Rezept als Hilfe einblenden</span>
+      <span class="arr" id="recArr">▼</span>
+    </button>
+    <div class="rec-body" id="recBody">
+      <table class="rt">
+        <thead><tr><th style="width:155px">Zutaten</th><th>Zubereitung</th><th style="width:160px">Geräte / Hinweise</th></tr></thead>
+        <tbody>
+          <tr><td>Ca. 250 ml Wasser<br>3 TL Gemüsebouillon</td><td>Wasser aufkochen, Brühenpulver einrühren, Topf vom Herd.</td><td>Topf, Messbecher, TL</td></tr>
+          <tr><td>200 g Bulgur</td><td>In Schüssel, mit Brühenwasser aus dem vorherigen Schritt auffüllen bis gerade bedeckt. Quellen lassen.</td><td>Schüssel, Waage</td></tr>
+          <tr><td>Saft ½ Zitrone</td><td>Dazugeben.</td><td>Messer, Zitronenpresse</td></tr>
+          <tr><td>Etwas Petersilie (frisch)</td><td>Hacken und dazugeben.</td><td>Messer, Brett</td></tr>
+          <tr><td>4 EL Olivenöl · 2 EL Tomatenmark</td><td>Untermischen.</td><td>Esslöffel</td></tr>
+          <tr><td>½ gelbe + ½ rote Paprika</td><td>In feine Würfel schneiden und dazugeben.</td><td>Messer, Brett</td></tr>
+          <tr><td>½ Schale Kirschtomaten</td><td>Halbieren und untermischen.</td><td>Messer, Brett</td></tr>
+          <tr><td>Salz, Pfeffer</td><td>Abschmecken.</td><td>–</td></tr>
+          <tr><td>½ Packung Schafskäse</td><td>Zerbröseln, verteilen.</td><td>Messer</td></tr>
+          <tr><td>½ Frühlingszwiebel</td><td>In feine Ringe schneiden, garnieren.</td><td>Messer, Brett</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="plan-tip"><strong>Tipp:</strong> Nutze die <strong>Quellzeit des Bulgurs</strong> (ca. 15 Min.) für Parallelarbeiten – aktiviere dafür den Schalter in der Zeile. Die <strong>?</strong>-Buttons in den Spaltenköpfen erklären, was dort rein gehört.</div>
+
+  <div class="slbl">Mein Arbeitsablaufplan</div>
+  <div class="plan-container">
+    <div class="plan-hdr pc-grid">
+      <div class="ph cn">#</div>
+      <div class="ph">Zeit <div class="tt-wrap"><button class="tt-btn" tabindex="0">?<div class="tt-pop"><strong>Zeitangabe</strong><br>Ab wie vielen Minuten nach dem Start machst du diesen Schritt?<div class="te"><span>0:00 = direkt am Anfang</span><span>0:10 = nach 10 Minuten</span></div></div></button></div></div>
+      <div class="ph">Arbeitsschritt <div class="tt-wrap"><button class="tt-btn" tabindex="0">?<div class="tt-pop"><strong>Arbeitsschritt</strong><br>Was genau tust du? Nenne die Schnitttechnik mit Fachbegriff.<div class="te"><span>Paprika in feine Würfel (Brunoise)</span><span>Hände waschen, Schürze anlegen</span></div></div></button></div></div>
+      <div class="ph pc-ge">Geräte &amp; Material <div class="tt-wrap"><button class="tt-btn" tabindex="0">?<div class="tt-pop"><strong>Geräte &amp; Material</strong><br>Welche Geräte brauchst du für genau diesen Schritt?<div class="te"><span>Messer, Schneidebrett</span><span>Topf, Messbecher, TL</span></div></div></button></div></div>
+      <div class="ph pc-hy">Hygiene / Qualität <div class="tt-wrap"><button class="tt-btn" tabindex="0">?<div class="tt-pop"><strong>Hygiene / Qualität</strong><br>Was musst du bei diesem Schritt beachten?<div class="te"><span>persönliche Hygiene</span><span>Kerne entfernen</span><span>nicht zu viel Wasser!</span></div></div></button></div></div>
+      <div class="ph"></div>
+    </div>
+    <div id="planBody"></div>
+  </div>
+
+  <button class="add-row-btn" onclick="addRow()">+ Schritt hinzufügen</button>
+
+  <div class="slbl">Selbst-Check</div>
+  <div class="check-grid">
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c1"><span>Mein erster Schritt ist Hygiene (Hände waschen, Schürze, Arbeitsplatz).</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c2"><span>Ich habe realistische Zeitangaben für jeden Schritt eingetragen.</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c3"><span>Parallelarbeiten während der Quellzeit sind eingetragen und markiert.</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c4"><span>Schnitttechniken sind mit Fachbegriff benannt (Brunoise, Rondelles…).</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c5"><span>Die Geräte-Spalte ist für jede Zeile vollständig ausgefüllt.</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c6"><span>Meine letzte Zeile ist Aufräumen, Geräte spülen, Hände waschen.</span></label>
+    <label class="check-item"><input type="checkbox" class="ccb" data-key="c7"><span>Abschmecken steht als eigener Schritt drin.</span></label>
+  </div>
+
+  <div class="slbl">Reflexion nach dem Kochpraktikum</div>
+  <div class="reflex-area">
+    <div style="font-size:var(--fs-sm);color:var(--muted)">Was hat in deinem Plan gut funktioniert? Wo war die Zeitplanung unrealistisch? Was würdest du nächstes Mal anders machen?</div>
+    <textarea id="reflexText" placeholder="Schreibe deine Reflexion hier…"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-p" onclick="window.print()">🖨️ Drucken / PDF</button>
+    <button class="btn-s" onclick="exportCSV()">⬇️ CSV exportieren</button>
+    <button class="btn-d" onclick="resetAll()">✕ Zurücksetzen</button>
+  </div>
+
+</div>
+</div>
+
+
+<script>
+function switchTab(id){
+  ['guide','plan'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===id);
+    document.getElementById('btn-'+t).classList.toggle('active',t===id);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleRecipe(){
+  const b=document.getElementById('recBody'),a=document.getElementById('recArr'),l=document.getElementById('recLbl');
+  const o=b.classList.toggle('open');
+  a.classList.toggle('open',o);
+  l.textContent=o?'📋 Rezept ausblenden':'📋 Rezept als Hilfe einblenden';
+}
+
+const STORE='aes_bulgur_v4';
+let saveTimer=null;
+const DR=[
+  {z:'0:00',s:'Hände waschen, Schürze anlegen, Arbeitsplatz reinigen, Zutaten und Geräte bereitlegen.',g:'Alle Geräte laut Plan',h:'Persönliche Hygiene',p:false},
+  {z:'0:05',s:'',g:'',h:'',p:false},{z:'0:10',s:'',g:'',h:'',p:false},
+  {z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},
+  {z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},
+  {z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},{z:'',s:'',g:'',h:'',p:false},
+];
+let state={name:'',klasse:'',datum:'',rows:JSON.parse(JSON.stringify(DR)),checks:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false},reflex:''};
+
+function sched(){setSS('saving');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,700);}
+function doSave(){colMeta();colChecks();state.reflex=document.getElementById('reflexText').value;try{localStorage.setItem(STORE,JSON.stringify(state));setSS('saved');}catch(e){setSS('err');}}
+function loadState(){try{const r=localStorage.getItem(STORE);if(r)state={...state,...JSON.parse(r)};}catch(e){}}
+function setSS(s){const dot=document.getElementById('saveDot'),txt=document.getElementById('saveText');if(s==='saved'){dot.className='save-dot saved';txt.textContent='Automatisch gespeichert ✓';}else if(s==='saving'){dot.className='save-dot saving';txt.textContent='Wird gespeichert…';}else if(s==='reset'){dot.className='save-dot';txt.textContent='Zurückgesetzt';}else{dot.className='save-dot';txt.textContent='Fehler';}}
+
+function loadMeta(){document.getElementById('metaName').value=state.name||'';document.getElementById('metaKlasse').value=state.klasse||'';document.getElementById('metaDatum').value=state.datum||'';}
+function colMeta(){state.name=document.getElementById('metaName').value;state.klasse=document.getElementById('metaKlasse').value;state.datum=document.getElementById('metaDatum').value;}
+['metaName','metaKlasse','metaDatum'].forEach(id=>document.getElementById(id).addEventListener('input',sched));
+function loadChecks(){document.querySelectorAll('.ccb').forEach(cb=>cb.checked=state.checks[cb.dataset.key]||false);}
+function colChecks(){document.querySelectorAll('.ccb').forEach(cb=>state.checks[cb.dataset.key]=cb.checked);}
+document.querySelectorAll('.ccb').forEach(cb=>cb.addEventListener('change',sched));
+document.getElementById('reflexText').addEventListener('input',sched);
+
+function grow(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
+
+function renderRows(){
+  const body=document.getElementById('planBody');
+  body.innerHTML='';
+  state.rows.forEach((row,i)=>{
+    const rd=document.createElement('div');
+    rd.className='plan-row pc-grid'+(row.p?' par':'');
+
+    // Nr
+    const pnr=d('pc pc-nr');const nr=document.createElement('span');nr.className='nr-lbl';nr.textContent=i+1;pnr.appendChild(nr);
+
+    // Zeit
+    const pzt=d('pc');
+    const iz=document.createElement('input');iz.type='text';iz.value=row.z;iz.placeholder='0:00';iz.className='pi zi';iz.autocomplete='off';
+    iz.addEventListener('input',e=>{state.rows[i].z=e.target.value;sched();});
+    pzt.appendChild(iz);
+
+    // Schritt
+    const psc=d('pc');
+    const ts=ta(row.s,'Arbeitsschritt beschreiben…');
+    ts.addEventListener('input',e=>{grow(e.target);state.rows[i].s=e.target.value;sched();});
+    const ptl=document.createElement('label');ptl.className='par-tog';ptl.style.display=i>0?'flex':'none';
+    const ptc=document.createElement('input');ptc.type='checkbox';ptc.checked=row.p;
+    ptc.addEventListener('change',()=>{state.rows[i].p=ptc.checked;rd.classList.toggle('par',ptc.checked);sched();});
+    const pts=document.createElement('span');pts.textContent='Parallelarbeit';
+    ptl.append(ptc,pts);psc.append(ts,ptl);
+
+    // Geräte
+    const pge=d('pc pc-ge');const tg=ta(row.g,'Geräte & Material…');
+    tg.addEventListener('input',e=>{grow(e.target);state.rows[i].g=e.target.value;sched();});pge.appendChild(tg);
+
+    // Hygiene
+    const phy=d('pc pc-hy');const th=ta(row.h,'Hinweis…');
+    th.addEventListener('input',e=>{grow(e.target);state.rows[i].h=e.target.value;sched();});phy.appendChild(th);
+
+    // Del
+    const pdel=d('pc pc-del');
+    if(state.rows.length>2){
+      const db=document.createElement('button');db.className='del-btn';db.title='Löschen';db.textContent='✕';
+      db.addEventListener('click',()=>{state.rows.splice(i,1);renderRows();sched();});pdel.appendChild(db);
+    }
+
+    rd.append(pnr,pzt,psc,pge,phy,pdel);
+    body.appendChild(rd);
+  });
+  requestAnimationFrame(()=>{body.querySelectorAll('textarea').forEach(grow);});
+}
+
+function d(cls){const e=document.createElement('div');e.className=cls;return e;}
+function ta(val,ph){const e=document.createElement('textarea');e.value=val;e.placeholder=ph;e.className='pi';e.rows=1;return e;}
+
+function addRow(){
+  state.rows.push({z:'',s:'',g:'',h:'',p:false});renderRows();sched();
+  requestAnimationFrame(()=>{const rows=document.querySelectorAll('#planBody .plan-row');if(rows.length)rows[rows.length-1].scrollIntoView({behavior:'smooth',block:'center'});});
+}
+
+function resetAll(){
+  if(!confirm('Wirklich alles zurücksetzen?'))return;
+  localStorage.removeItem(STORE);
+  state={name:'',klasse:'',datum:'',rows:JSON.parse(JSON.stringify(DR)),checks:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false},reflex:''};
+  loadMeta();loadChecks();document.getElementById('reflexText').value='';renderRows();setSS('reset');
+}
+
+function exportCSV(){
+  colMeta();
+  const n=state.name||'Unbekannt',k=state.klasse||'8',dd=state.datum||new Date().toISOString().slice(0,10);
+  let csv='\uFEFF';
+  csv+=`Arbeitsablaufplan Bulgursalat;${n};${k};${dd}\n`;
+  csv+='#;Zeit;Arbeitsschritt;Geräte & Materialien;Hygiene / Qualität;Parallelarbeit\n';
+  state.rows.forEach((r,i)=>{const q=v=>'"'+(v||'').replace(/"/g,'""')+'"';csv+=`${i+1};${q(r.z)};${q(r.s)};${q(r.g)};${q(r.h)};${r.p?'Ja':''}\n`;});
+  if(state.reflex)csv+=`\nReflexion;"${state.reflex.replace(/"/g,'""')}"\n`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`Arbeitsablaufplan_${n.replace(/\s+/g,'_')}_${dd}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+loadState();loadMeta();loadChecks();
+document.getElementById('reflexText').value=state.reflex||'';
+renderRows();
+if(state.name||state.rows.some(r=>r.s))setSS('saved');
+
+window.addEventListener('orientationchange',()=>{setTimeout(()=>{document.querySelectorAll('#planBody textarea').forEach(grow);},300);});
+</script>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Chicken Wrap Reloaded – Ernährungspyramide</title>
+<style>
+  :root {
+    --c-water: #b9e4f0;
+    --c-veg:   #8ec641;
+    --c-grain: #c8df7c;
+    --c-milk:  #f7d84a;
+    --c-fat:   #f9e07a;
+    --c-sweet: #d94032;
+    --c-correct: #2ecc71;
+    --c-wrong:   #e74c3c;
+    --c-select:  #2980b9;
+    --c-extra:   #f59e0b;
+    --bg: #f4f6f8;
+    --ink: #1f2933;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  body { padding: 12px; min-height: 100vh; touch-action: manipulation; }
+
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .subtitle { color: #4b5563; margin: 0 0 14px; font-size: 0.95rem; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: 1.1fr 1fr; }
+  }
+
+  /* ---------- Pyramide ---------- */
+  .pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .level {
+    width: 100%;
+    border-radius: 8px;
+    padding: 6px 8px 8px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, outline-color 0.12s ease;
+    outline: 3px solid transparent;
+  }
+  .level:active { transform: scale(0.99); }
+  .level.target-hint { outline-color: var(--c-select); box-shadow: 0 0 0 4px rgba(41,128,185,0.18); }
+
+  .level[data-level="6"] { width: 25%; background: var(--c-sweet); color: #fff; }
+  .level[data-level="5"] { width: 45%; background: var(--c-fat); }
+  .level[data-level="4"] { width: 55%; background: var(--c-milk); }
+  .level[data-level="3"] { width: 72%; background: var(--c-grain); }
+  .level[data-level="2"] { width: 86%; background: var(--c-veg); }
+  .level[data-level="1"] { width: 100%; background: var(--c-water); }
+
+  .level-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 5px;
+    line-height: 1.15;
+  }
+  .level-header .icon { font-size: 1rem; }
+  .level-header .label { flex: 1; }
+  .level-header .portions {
+    background: rgba(255,255,255,0.65);
+    color: #1f2933;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .level[data-level="6"] .level-header .portions { background: rgba(255,255,255,0.9); }
+
+  /* Slot-Reihe (= Portions-Kacheln) */
+  .slots {
+    display: grid;
+    gap: 4px;
+  }
+  .slot {
+    min-height: 46px;
+    background: rgba(255,255,255,0.35);
+    border: 1.5px dashed rgba(0,0,0,0.22);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3px 2px;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    color: rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .level[data-level="6"] .slot { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.7); color: rgba(255,255,255,0.85); }
+  .slot .slot-emoji { font-size: 1.1rem; }
+  .slot.empty .slot-emoji { opacity: 0.45; }
+
+  .slot.filled {
+    background: rgba(255,255,255,0.96);
+    border-style: solid;
+    border-color: rgba(0,0,0,0.18);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    cursor: pointer;
+  }
+  .slot.filled .slot-emoji { font-size: 1.25rem; }
+  .slot.filled .slot-name { font-size: 0.7rem; }
+
+  .slot.filled.correct { border-color: var(--c-correct); box-shadow: 0 0 0 2px var(--c-correct) inset; }
+  .slot.filled.wrong   { border-color: var(--c-wrong);   box-shadow: 0 0 0 2px var(--c-wrong) inset; }
+  .slot.filled.wrong .slot-name { text-decoration: line-through; opacity: 0.8; }
+  .slot.filled.extra   { border-color: var(--c-extra); background: #fff7e6; }
+
+  .slot.ghost {
+    border-style: dashed;
+    border-color: var(--c-correct);
+    background: rgba(46,204,113,0.12);
+    color: #14532d;
+    font-weight: 600;
+  }
+  .slot.ghost .slot-emoji { font-size: 1.15rem; opacity: 0.85; }
+  .slot.ghost .slot-name { font-size: 0.68rem; }
+
+  /* ---------- Zutaten-Panel ---------- */
+  .panel {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .panel h2 { font-size: 1rem; margin: 0 0 8px; }
+  .ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 60px;
+  }
+  .empty-hint { color: #9ca3af; font-style: italic; font-size: 0.9rem; padding: 6px; }
+
+  .chip {
+    background: #fff;
+    color: var(--ink);
+    border: 2px solid #cbd5e1;
+    border-radius: 22px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.12s ease;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip:active { transform: scale(0.96); }
+  .chip.selected {
+    border-color: var(--c-select);
+    background: var(--c-select);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(41,128,185,0.25);
+  }
+  .chip .emoji { font-size: 1.1rem; }
+
+  /* ---------- Buttons ---------- */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn {
+    flex: 1 1 auto;
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: #2563eb; }
+  .btn-secondary { background: #6b7280; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ---------- Ergebnis ---------- */
+  .result {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: none;
+  }
+  .result.show { display: block; }
+  .result.success { background: #d4f8e0; color: #166534; }
+  .result.partial { background: #fef3c7; color: #92400e; }
+
+  .hint {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #4b5563;
+    background: #eef2f7;
+    border-left: 4px solid #2563eb;
+    padding: 8px 10px;
+    border-radius: 4px;
+  }
+  .hint b { color: #1f2933; }
+</style>
+</head>
+<body>
+
+<h1>Chicken Wrap Reloaded – wo passt was in die Ernährungspyramide?</h1>
+<p class="subtitle">Tippe eine Zutat an und tippe danach auf die passende Stufe der Pyramide. Wenn du fertig bist, drücke <b>„Lösung anzeigen"</b>.</p>
+
+<div class="layout">
+
+  <!-- Pyramide -->
+  <div class="pyramid" id="pyramid">
+    <div class="level" data-level="6" data-key="sweets"   data-portions="1" data-empty-emoji="🍬">
+      <div class="level-header"><span class="icon">🍫</span><span class="label">Süßes &amp; Snacks</span><span class="portions">1 Kachel</span></div>
+      <div class="slots"></div>
+    </div>
+    <div class="level" data-level="5" data-key="fats"     data-portions="3" data-empty-emoji="🫒">
+      <div class="level-header"><span class="icon">🫒</span><span class="label">Fette &amp; Öle</span><span class="portions">3 Kacheln</span></div>
+      <div class="slots"></div>
+    </div>
+    <div class="level" data-level="4" data-key="protein"  data-portions="3" data-empty-emoji="🥚">
+      <div class="level-header"><span class="icon">🥚</span><span class="label">Milch, Eier, Fleisch &amp; Fisch</span><span class="portions">3 Kacheln</span></div>
+      <div class="slots"></div>
+    </div>
+    <div class="level" data-level="3" data-key="grain"    data-portions="4" data-empty-emoji="🌾">
+      <div class="level-header"><span class="icon">🌾</span><span class="label">Getreide &amp; Kartoffeln</span><span class="portions">4 Kacheln</span></div>
+      <div class="slots"></div>
+    </div>
+    <div class="level" data-level="2" data-key="vegfruit" data-portions="5" data-empty-emoji="🥕">
+      <div class="level-header"><span class="icon">🥕</span><span class="label">Obst &amp; Gemüse</span><span class="portions">5 Kacheln</span></div>
+      <div class="slots"></div>
+    </div>
+    <div class="level" data-level="1" data-key="drinks"   data-portions="6" data-empty-emoji="💧">
+      <div class="level-header"><span class="icon">💧</span><span class="label">Getränke</span><span class="portions">6 Kacheln</span></div>
+      <div class="slots"></div>
+    </div>
+  </div>
+
+  <!-- Zutaten + Aktionen -->
+  <div>
+    <div class="panel">
+      <h2>Zutaten</h2>
+      <div class="ingredients" id="ingredients"></div>
+      <div class="hint">
+        💡 <b>Eine Kachel = eine Portion = eine Handvoll</b> (pro Tag).<br>
+        So geht's: 1️⃣ Zutat antippen → 2️⃣ Pyramiden-Stufe antippen.
+        Tipp auf eine bereits einsortierte Zutat, um sie zurückzuholen.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnReveal">Lösung anzeigen</button>
+      <button class="btn btn-secondary" id="btnReset">Zurücksetzen</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+</div>
+
+<script>
+  const INGREDIENTS = [
+    { id: 'huhn',     name: 'Hähnchenbrust',  emoji: '🍗', correct: 'protein'  },
+    { id: 'ei',       name: 'Ei',             emoji: '🥚', correct: 'protein'  },
+    { id: 'mehl',     name: 'Mehl',           emoji: '🌾', correct: 'grain'    },
+    { id: 'corn',     name: 'Cornflakes',     emoji: '🥣', correct: 'grain'    },
+    { id: 'tortilla', name: 'Tortilla-Fladen', emoji: '🫓', correct: 'grain'   },
+    { id: 'oel',      name: 'Öl',             emoji: '🫒', correct: 'fats'     },
+    { id: 'mayo',     name: 'Mayonnaise',     emoji: '🥄', correct: 'fats'     },
+    { id: 'ketchup',  name: 'Ketchup',        emoji: '🍅', correct: 'sweets'   },
+    { id: 'tomate',   name: 'Tomate',         emoji: '🍅', correct: 'vegfruit' },
+    { id: 'gurke',    name: 'Salatgurke',     emoji: '🥒', correct: 'vegfruit' },
+    { id: 'salat',    name: 'Salat',          emoji: '🥬', correct: 'vegfruit' },
+  ];
+
+  // State: ingredientId -> zoneKey (or null)
+  const state = {};
+  INGREDIENTS.forEach(i => state[i.id] = null);
+  let selectedId = null;
+  let revealed = false;
+
+  const ingredientsEl = document.getElementById('ingredients');
+  const pyramidEl = document.getElementById('pyramid');
+  const resultEl = document.getElementById('result');
+  const btnReveal = document.getElementById('btnReveal');
+  const btnReset = document.getElementById('btnReset');
+
+  function renderPool() {
+    ingredientsEl.innerHTML = '';
+    const pool = INGREDIENTS.filter(i => state[i.id] === null);
+    if (pool.length === 0) {
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Alle Zutaten sind eingeordnet. Jetzt „Lösung anzeigen"!';
+      ingredientsEl.appendChild(hint);
+      return;
+    }
+    pool.forEach(ing => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'chip' + (selectedId === ing.id ? ' selected' : '');
+      el.dataset.id = ing.id;
+      el.innerHTML = `<span class="emoji">${ing.emoji}</span><span>${ing.name}</span>`;
+      el.addEventListener('click', () => onPoolClick(ing.id));
+      ingredientsEl.appendChild(el);
+    });
+  }
+
+  function makeSlot({ filled, ing, correctVsKey, extra, ghost, emptyEmoji }) {
+    const s = document.createElement('div');
+    s.className = 'slot';
+    if (filled) {
+      s.classList.add('filled');
+      if (extra) s.classList.add('extra');
+      if (revealed) s.classList.add(correctVsKey ? 'correct' : 'wrong');
+      s.innerHTML = `<span class="slot-emoji">${ing.emoji}</span><span class="slot-name">${ing.name}</span>`;
+      if (!revealed) {
+        s.addEventListener('click', (e) => { e.stopPropagation(); returnToPool(ing.id); });
+      }
+    } else if (ghost) {
+      s.classList.add('ghost');
+      s.innerHTML = `<span class="slot-emoji">${ing.emoji}</span><span class="slot-name">${ing.name}</span>`;
+    } else {
+      s.classList.add('empty');
+      s.innerHTML = `<span class="slot-emoji">${emptyEmoji}</span>`;
+    }
+    return s;
+  }
+
+  function renderPyramid() {
+    pyramidEl.querySelectorAll('.level').forEach(lvl => {
+      const key = lvl.dataset.key;
+      const portions = parseInt(lvl.dataset.portions, 10);
+      const emptyEmoji = lvl.dataset.emptyEmoji;
+      const slotsEl = lvl.querySelector('.slots');
+      slotsEl.innerHTML = '';
+
+      const placed = INGREDIENTS.filter(i => state[i.id] === key);
+      const ghostsForZone = revealed
+        ? INGREDIENTS.filter(g => g.correct === key && state[g.id] !== key)
+        : [];
+
+      const totalSlots = Math.max(portions, placed.length);
+      slotsEl.style.gridTemplateColumns = `repeat(${totalSlots}, 1fr)`;
+
+      let ghostIdx = 0;
+      for (let i = 0; i < totalSlots; i++) {
+        if (i < placed.length) {
+          const ing = placed[i];
+          slotsEl.appendChild(makeSlot({
+            filled: true,
+            ing,
+            correctVsKey: ing.correct === key,
+            extra: i >= portions,
+            emptyEmoji
+          }));
+        } else if (revealed && ghostIdx < ghostsForZone.length) {
+          slotsEl.appendChild(makeSlot({ ghost: true, ing: ghostsForZone[ghostIdx], emptyEmoji }));
+          ghostIdx++;
+        } else {
+          slotsEl.appendChild(makeSlot({ emptyEmoji }));
+        }
+      }
+
+      lvl.classList.toggle('target-hint', !!selectedId && !revealed);
+    });
+  }
+
+  function render() {
+    renderPool();
+    renderPyramid();
+  }
+
+  function onPoolClick(id) {
+    if (revealed) return;
+    selectedId = (selectedId === id) ? null : id;
+    render();
+  }
+
+  function returnToPool(id) {
+    if (revealed) return;
+    state[id] = null;
+    if (selectedId === id) selectedId = null;
+    hideResult();
+    render();
+  }
+
+  function placeInZone(key) {
+    if (revealed || !selectedId) return;
+    state[selectedId] = key;
+    selectedId = null;
+    hideResult();
+    render();
+  }
+
+  pyramidEl.querySelectorAll('.level').forEach(lvl => {
+    lvl.addEventListener('click', () => placeInZone(lvl.dataset.key));
+  });
+
+  function showResult() {
+    const placed = INGREDIENTS.filter(i => state[i.id] !== null);
+    const correct = placed.filter(i => state[i.id] === i.correct).length;
+    const total = INGREDIENTS.length;
+    const allCorrect = (placed.length === total) && (correct === total);
+
+    resultEl.classList.remove('success', 'partial');
+    if (allCorrect) {
+      resultEl.classList.add('success', 'show');
+      resultEl.innerHTML = `🎉 Super gemacht! Alle ${total} Zutaten sind richtig eingeordnet.`;
+    } else {
+      resultEl.classList.add('partial', 'show');
+      const missing = INGREDIENTS.filter(i => state[i.id] === null).length;
+      resultEl.innerHTML =
+        `Ergebnis: <b>${correct} von ${total}</b> richtig eingeordnet.` +
+        (missing > 0 ? ` ${missing} Zutat${missing === 1 ? '' : 'en'} fehlten.` : '') +
+        ` <br><span style="font-weight:500">Grüne Kacheln = richtig · rote Kacheln = falsche Stufe · gestrichelte grüne Kacheln zeigen, wohin die Zutat gehört hätte.</span>`;
+    }
+  }
+  function hideResult() {
+    resultEl.classList.remove('show', 'success', 'partial');
+    resultEl.innerHTML = '';
+  }
+
+  btnReveal.addEventListener('click', () => {
+    revealed = true;
+    selectedId = null;
+    btnReveal.disabled = true;
+    showResult();
+    render();
+  });
+
+  btnReset.addEventListener('click', () => {
+    INGREDIENTS.forEach(i => state[i.id] = null);
+    selectedId = null;
+    revealed = false;
+    btnReveal.disabled = false;
+    hideResult();
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

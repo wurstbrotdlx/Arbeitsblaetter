@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Lasagne – Ernährungspyramide</title>
+<style>
+  :root {
+    --c-water: #b9e4f0;
+    --c-veg:   #8ec641;
+    --c-grain: #c8df7c;
+    --c-milk:  #f7d84a;
+    --c-fat:   #f9e07a;
+    --c-sweet: #d94032;
+    --c-correct: #2ecc71;
+    --c-wrong:   #e74c3c;
+    --c-select:  #2980b9;
+    --c-extra:   #f59e0b;
+    --bg: #f4f6f8;
+    --ink: #1f2933;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  body { padding: 12px; min-height: 100vh; touch-action: manipulation; }
+
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .subtitle { color: #4b5563; margin: 0 0 14px; font-size: 0.95rem; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: 1.1fr 1fr; }
+  }
+
+  /* ---------- Pyramide ---------- */
+  .pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .level {
+    width: 100%;
+    border-radius: 8px;
+    padding: 6px 8px 8px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, outline-color 0.12s ease;
+    outline: 3px solid transparent;
+  }
+  .level:active { transform: scale(0.99); }
+  .level.target-hint { outline-color: var(--c-select); box-shadow: 0 0 0 4px rgba(41,128,185,0.18); }
+
+  .level[data-level="6"] { width: 25%; background: var(--c-sweet); color: #fff; }
+  .level[data-level="5"] { width: 45%; background: var(--c-fat); }
+  .level[data-level="4"] { width: 55%; background: var(--c-milk); }
+  .level[data-level="3"] { width: 72%; background: var(--c-grain); }
+  .level[data-level="2"] { width: 86%; background: var(--c-veg); }
+  .level[data-level="1"] { width: 100%; background: var(--c-water); }
+
+  .level-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 5px;
+    line-height: 1.15;
+  }
+  .level-header .icon { font-size: 1rem; }
+  .level-header .label { flex: 1; }
+  .level-header .portions {
+    background: rgba(255,255,255,0.65);
+    color: #1f2933;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .level[data-level="6"] .level-header .portions { background: rgba(255,255,255,0.9); }
+
+  /* Slot-Reihe (= Portions-Kacheln) */
+  .slots {
+    display: grid;
+    gap: 4px;
+  }
+  .slot {
+    min-height: 46px;
+    background: rgba(255,255,255,0.35);
+    border: 1.5px dashed rgba(0,0,0,0.22);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3px 2px;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    color: rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .level[data-level="6"] .slot { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.7); color: rgba(255,255,255,0.85); }
+  .slot .slot-emoji { font-size: 1.1rem; }
+  .slot.empty .slot-emoji { opacity: 0.45; }
+
+  .slot.filled {
+    background: rgba(255,255,255,0.96);
+    border-style: solid;
+    border-color: rgba(0,0,0,0.18);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    cursor: pointer;
+  }
+  .slot.filled .slot-emoji { font-size: 1.25rem; }
+  .slot.filled .slot-name { font-size: 0.7rem; }
+
+  .slot.filled.correct { border-color: var(--c-correct); box-shadow: 0 0 0 2px var(--c-correct) inset; }
+  .slot.filled.wrong   { border-color: var(--c-wrong);   box-shadow: 0 0 0 2px var(--c-wrong) inset; }
+  .slot.filled.wrong .slot-name { text-decoration: line-through; opacity: 0.8; }
+  .slot.filled.extra   { border-color: var(--c-extra); background: #fff7e6; }
+
+  .slot.ghost {
+    border-style: dashed;
+    border-color: var(--c-correct);
+    background: rgba(46,204,113,0.12);
+    color: #14532d;
+    font-weight: 600;
+  }
+  .slot.ghost .slot-emoji { font-size: 1.15rem; opacity: 0.85; }
+  .slot.ghost .slot-name { font-size: 0.68rem; }
+
+  /* Sub-Gruppen-Trenner innerhalb einer Stufe (z.B. 2 Milch | 1 Eiweiß) */
+  .slot.split-before { position: relative; margin-left: 6px; }
+  .slot.split-before::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 12%; bottom: 12%;
+    width: 2px;
+    background: rgba(0,0,0,0.22);
+    border-radius: 1px;
+  }
+  .level[data-level="6"] .slot.split-before::before { background: rgba(255,255,255,0.55); }
+
+  /* ---------- Schwierigkeitsgrade (alles über die <body>-Klasse gesteuert) ----------
+     leicht  = keine Klasse        -> Labels, Portionsangaben, Kacheln, Hint sichtbar
+     mittel  = body.mode-medium    -> Kacheln bleiben, aber Ebenen-Beschriftung weg
+     schwer  = body.mode-hard      -> nur farbige Ebenen; Kacheln & Header weg,
+                                       Zutaten landen als gestapelte Chips in der Ebene
+     Die JS-Logik liest die Klasse einmalig aus (Konstante MODE) und rendert entsprechend.
+  */
+  body.mode-medium .level-header .label,
+  body.mode-medium .level-header .portions { display: none; }
+
+  body.mode-hard .level-header { display: none; }
+  body.mode-hard .slots { display: none; }
+  body.mode-hard .level { min-height: 50px; display: flex; align-items: center; }
+  body.mode-hard .hint-portions { display: none; }
+
+  /* Chip-Stapel direkt in der Ebene – nur im Schwer-Modus sichtbar */
+  .level-chips { display: none; }
+  body.mode-hard .level-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+    min-height: 38px;
+    align-items: center;
+  }
+  .level-chip {
+    background: rgba(255,255,255,0.96);
+    border: 2px solid rgba(0,0,0,0.18);
+    border-radius: 16px;
+    padding: 5px 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 34px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    cursor: pointer;
+  }
+  .level-chip:active { transform: scale(0.96); }
+  .level-chip .lc-emoji { font-size: 1.1rem; }
+  .level-chip.correct { border-color: var(--c-correct); box-shadow: 0 0 0 2px var(--c-correct) inset; }
+  .level-chip.wrong   { border-color: var(--c-wrong);   box-shadow: 0 0 0 2px var(--c-wrong) inset; }
+  .level-chip.wrong .lc-name { text-decoration: line-through; opacity: 0.8; }
+  .level-chip.ghost {
+    border-style: dashed;
+    border-color: var(--c-correct);
+    background: rgba(46,204,113,0.16);
+    color: #14532d;
+    cursor: default;
+  }
+
+  /* ---------- Zutaten-Panel ---------- */
+  .panel {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .panel h2 { font-size: 1rem; margin: 0 0 8px; }
+  .ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 60px;
+  }
+  .empty-hint { color: #9ca3af; font-style: italic; font-size: 0.9rem; padding: 6px; }
+
+  .chip {
+    background: #fff;
+    color: var(--ink);
+    border: 2px solid #cbd5e1;
+    border-radius: 22px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.12s ease;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip:active { transform: scale(0.96); }
+  .chip.selected {
+    border-color: var(--c-select);
+    background: var(--c-select);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(41,128,185,0.25);
+  }
+  .chip .emoji { font-size: 1.1rem; }
+
+  /* ---------- Buttons ---------- */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn {
+    flex: 1 1 auto;
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: #2563eb; }
+  .btn-secondary { background: #6b7280; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ---------- Ergebnis ---------- */
+  .result {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: none;
+  }
+  .result.show { display: block; }
+  .result.success { background: #d4f8e0; color: #166534; }
+  .result.partial { background: #fef3c7; color: #92400e; }
+
+  .hint {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #4b5563;
+    background: #eef2f7;
+    border-left: 4px solid #2563eb;
+    padding: 8px 10px;
+    border-radius: 4px;
+  }
+  .hint b { color: #1f2933; }
+</style>
+</head>
+<body class="">
+
+<h1>Lasagne – wo passt was in die Ernährungspyramide?</h1>
+<p class="subtitle">Tippe eine Zutat an und tippe danach auf die passende Stufe der Pyramide. Wenn du fertig bist, drücke <b>„Lösung anzeigen“</b>.</p>
+
+<div class="layout">
+
+  <!-- Pyramide -->
+  <div class="pyramid" id="pyramid">
+    <div class="level" data-level="6" data-key="sweets"   data-portions="1" data-empty-emojis="🍬">
+      <div class="level-header"><span class="icon">🍫</span><span class="label">Extras (Süßes, Snacks, Salziges)</span><span class="portions">1 Kachel</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+    <div class="level" data-level="5" data-key="fats"     data-portions="3" data-empty-emojis="🫒,🫒,🥜" data-split-after="2">
+      <div class="level-header"><span class="icon">🫒</span><span class="label">Pflanzenöle · Nüsse/Saaten</span><span class="portions">3 Kacheln (2 + 1)</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+    <div class="level" data-level="4" data-key="protein"  data-portions="3" data-empty-emojis="🥛,🥛,🍗" data-split-after="2">
+      <div class="level-header"><span class="icon">🥛</span><span class="label">Milch · Fleisch/Fisch/Ei/Hülsenfrüchte</span><span class="portions">3 Kacheln (2 + 1)</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+    <div class="level" data-level="3" data-key="grain"    data-portions="4" data-empty-emojis="🌾">
+      <div class="level-header"><span class="icon">🌾</span><span class="label">Brot, Getreide &amp; Beilagen</span><span class="portions">4 Kacheln</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+    <div class="level" data-level="2" data-key="vegfruit" data-portions="5" data-empty-emojis="🥕">
+      <div class="level-header"><span class="icon">🥕</span><span class="label">Obst &amp; Gemüse</span><span class="portions">5 Kacheln</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+    <div class="level" data-level="1" data-key="drinks"   data-portions="6" data-empty-emojis="💧">
+      <div class="level-header"><span class="icon">💧</span><span class="label">Getränke</span><span class="portions">6 Kacheln</span></div>
+      <div class="slots"></div>
+      <div class="level-chips"></div>
+    </div>
+  </div>
+
+  <!-- Zutaten + Aktionen -->
+  <div>
+    <div class="panel">
+      <h2>Zutaten</h2>
+      <div class="ingredients" id="ingredients"></div>
+      <div class="hint">
+        <span class="hint-portions">💡 <b>Eine Kachel = eine Portion = eine Handvoll</b> (pro Tag).<br></span>
+        So geht’s: 1️⃣ Zutat antippen → 2️⃣ Pyramiden-Stufe antippen.
+        Tipp auf eine bereits einsortierte Zutat, um sie zurückzuholen.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnReveal">Lösung anzeigen</button>
+      <button class="btn btn-secondary" id="btnReset">Zurücksetzen</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+</div>
+
+<script>
+  const INGREDIENTS = [
+    { id: 'zwiebel_0', name: 'Zwiebel', emoji: '🧅', correct: 'vegfruit' },
+    { id: 'knoblauch_1', name: 'Knoblauch', emoji: '🧄', correct: 'vegfruit' },
+    { id: 'olivenol_2', name: 'Olivenöl', emoji: '🫒', correct: 'fats' },
+    { id: 'rinderhack_3', name: 'Rinderhack', emoji: '🍗', correct: 'protein' },
+    { id: 'tomatenmark_4', name: 'Tomatenmark', emoji: '🍅', correct: 'vegfruit' },
+    { id: 'dosentomaten_5', name: 'Dosentomaten', emoji: '🍅', correct: 'vegfruit' },
+    { id: 'lasagneplatten_6', name: 'Lasagneplatten', emoji: '🍝', correct: 'grain' },
+    { id: 'butter_7', name: 'Butter', emoji: '🧈', correct: 'fats' },
+    { id: 'mehl_8', name: 'Mehl', emoji: '🌾', correct: 'grain' },
+    { id: 'milch_9', name: 'Milch', emoji: '🥛', correct: 'protein' },
+    { id: 'kase_10', name: 'Käse', emoji: '🧀', correct: 'protein' },
+  ];
+
+  // Schwierigkeitsgrad einmalig aus der <body>-Klasse ableiten.
+  const MODE = document.body.classList.contains('mode-hard') ? 'hard'
+             : document.body.classList.contains('mode-medium') ? 'medium'
+             : 'easy';
+
+  // State: ingredientId -> zoneKey (or null)
+  const state = {};
+  INGREDIENTS.forEach(i => state[i.id] = null);
+  let selectedId = null;
+  let revealed = false;
+
+  const ingredientsEl = document.getElementById('ingredients');
+  const pyramidEl = document.getElementById('pyramid');
+  const resultEl = document.getElementById('result');
+  const btnReveal = document.getElementById('btnReveal');
+  const btnReset = document.getElementById('btnReset');
+
+  function renderPool() {
+    ingredientsEl.innerHTML = '';
+    const pool = INGREDIENTS.filter(i => state[i.id] === null);
+    if (pool.length === 0) {
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Alle Zutaten sind eingeordnet. Jetzt „Lösung anzeigen“!';
+      ingredientsEl.appendChild(hint);
+      return;
+    }
+    pool.forEach(ing => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'chip' + (selectedId === ing.id ? ' selected' : '');
+      el.dataset.id = ing.id;
+      el.innerHTML = `<span class="emoji">${ing.emoji}</span><span>${ing.name}</span>`;
+      el.addEventListener('click', () => onPoolClick(ing.id));
+      ingredientsEl.appendChild(el);
+    });
+  }
+
+  function makeSlot({ filled, ing, correctVsKey, extra, ghost, emptyEmoji, splitBefore }) {
+    const s = document.createElement('div');
+    s.className = 'slot';
+    if (splitBefore) s.classList.add('split-before');
+    if (filled) {
+      s.classList.add('filled');
+      if (extra) s.classList.add('extra');
+      if (revealed) s.classList.add(correctVsKey ? 'correct' : 'wrong');
+      s.innerHTML = `<span class="slot-emoji">${ing.emoji}</span><span class="slot-name">${ing.name}</span>`;
+      if (!revealed) {
+        s.addEventListener('click', (e) => { e.stopPropagation(); returnToPool(ing.id); });
+      }
+    } else if (ghost) {
+      s.classList.add('ghost');
+      s.innerHTML = `<span class="slot-emoji">${ing.emoji}</span><span class="slot-name">${ing.name}</span>`;
+    } else {
+      s.classList.add('empty');
+      s.innerHTML = `<span class="slot-emoji">${emptyEmoji}</span>`;
+    }
+    return s;
+  }
+
+  // Chip-Variante für den Schwer-Modus (Zutat liegt direkt in der Ebene).
+  function makeLevelChip({ ing, correctVsKey, ghost }) {
+    const c = document.createElement('div');
+    c.className = 'level-chip';
+    c.innerHTML = `<span class="lc-emoji">${ing.emoji}</span><span class="lc-name">${ing.name}</span>`;
+    if (ghost) { c.classList.add('ghost'); return c; }
+    if (revealed) c.classList.add(correctVsKey ? 'correct' : 'wrong');
+    if (!revealed) {
+      c.addEventListener('click', (e) => { e.stopPropagation(); returnToPool(ing.id); });
+    }
+    return c;
+  }
+
+  function renderPyramid() {
+    pyramidEl.querySelectorAll('.level').forEach(lvl => {
+      const key = lvl.dataset.key;
+      const placed = INGREDIENTS.filter(i => state[i.id] === key);
+      const ghostsForZone = revealed
+        ? INGREDIENTS.filter(g => g.correct === key && state[g.id] !== key)
+        : [];
+
+      if (MODE === 'hard') {
+        // Schwer: gestapelte Chips, die ganze Ebene ist die Ablagefläche.
+        const chipsEl = lvl.querySelector('.level-chips');
+        chipsEl.innerHTML = '';
+        placed.forEach(ing => chipsEl.appendChild(
+          makeLevelChip({ ing, correctVsKey: ing.correct === key })
+        ));
+        if (revealed) ghostsForZone.forEach(g => chipsEl.appendChild(
+          makeLevelChip({ ing: g, ghost: true })
+        ));
+      } else {
+        // Leicht & Mittel: Portions-Kacheln (Slots).
+        const portions = parseInt(lvl.dataset.portions, 10);
+        const emptyEmojis = (lvl.dataset.emptyEmojis || '·').split(',');
+        const splitAfter = lvl.dataset.splitAfter ? parseInt(lvl.dataset.splitAfter, 10) : null;
+        const emojiAt = (i) => emptyEmojis[Math.min(i, emptyEmojis.length - 1)];
+        const slotsEl = lvl.querySelector('.slots');
+        slotsEl.innerHTML = '';
+
+        const totalSlots = Math.max(portions, placed.length);
+        slotsEl.style.gridTemplateColumns = `repeat(${totalSlots}, 1fr)`;
+
+        let ghostIdx = 0;
+        for (let i = 0; i < totalSlots; i++) {
+          const splitBefore = (splitAfter !== null) && (i === splitAfter);
+          if (i < placed.length) {
+            const ing = placed[i];
+            slotsEl.appendChild(makeSlot({
+              filled: true,
+              ing,
+              correctVsKey: ing.correct === key,
+              extra: i >= portions,
+              emptyEmoji: emojiAt(i),
+              splitBefore
+            }));
+          } else if (revealed && ghostIdx < ghostsForZone.length) {
+            slotsEl.appendChild(makeSlot({ ghost: true, ing: ghostsForZone[ghostIdx], emptyEmoji: emojiAt(i), splitBefore }));
+            ghostIdx++;
+          } else {
+            slotsEl.appendChild(makeSlot({ emptyEmoji: emojiAt(i), splitBefore }));
+          }
+        }
+      }
+
+      lvl.classList.toggle('target-hint', !!selectedId && !revealed);
+    });
+  }
+
+  function render() {
+    renderPool();
+    renderPyramid();
+  }
+
+  function onPoolClick(id) {
+    if (revealed) return;
+    selectedId = (selectedId === id) ? null : id;
+    render();
+  }
+
+  function returnToPool(id) {
+    if (revealed) return;
+    state[id] = null;
+    if (selectedId === id) selectedId = null;
+    hideResult();
+    render();
+  }
+
+  function placeInZone(key) {
+    if (revealed || !selectedId) return;
+    state[selectedId] = key;
+    selectedId = null;
+    hideResult();
+    render();
+  }
+
+  pyramidEl.querySelectorAll('.level').forEach(lvl => {
+    lvl.addEventListener('click', () => placeInZone(lvl.dataset.key));
+  });
+
+  function showResult() {
+    const placed = INGREDIENTS.filter(i => state[i.id] !== null);
+    const correct = placed.filter(i => state[i.id] === i.correct).length;
+    const total = INGREDIENTS.length;
+    const allCorrect = (placed.length === total) && (correct === total);
+
+    resultEl.classList.remove('success', 'partial');
+    if (allCorrect) {
+      resultEl.classList.add('success', 'show');
+      resultEl.innerHTML = `🎉 Super gemacht! Alle ${total} Zutaten sind richtig eingeordnet.`;
+    } else {
+      resultEl.classList.add('partial', 'show');
+      const missing = INGREDIENTS.filter(i => state[i.id] === null).length;
+      resultEl.innerHTML =
+        `Ergebnis: <b>${correct} von ${total}</b> richtig eingeordnet.` +
+        (missing > 0 ? ` ${missing} Zutat${missing === 1 ? '' : 'en'} fehlten.` : '') +
+        ` <br><span style="font-weight:500">Grüne Kacheln = richtig · rote Kacheln = falsche Stufe · gestrichelte grüne Kacheln zeigen, wohin die Zutat gehört hätte.</span>`;
+    }
+  }
+  function hideResult() {
+    resultEl.classList.remove('show', 'success', 'partial');
+    resultEl.innerHTML = '';
+  }
+
+  btnReveal.addEventListener('click', () => {
+    revealed = true;
+    selectedId = null;
+    btnReveal.disabled = true;
+    showResult();
+    render();
+  });
+
+  btnReset.addEventListener('click', () => {
+    INGREDIENTS.forEach(i => state[i.id] = null);
+    selectedId = null;
+    revealed = false;
+    btnReveal.disabled = false;
+    hideResult();
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

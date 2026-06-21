@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Dummy Arbeitsblatt</title>
+<style>
+  body {
+    font-family: -apple-system, Arial, sans-serif;
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 0 20px;
+    background: #fafafa;
+    color: #222;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  .klick {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 4px 0;
+    background: #fff3cd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .klick.aktiv {
+    background: #4caf50;
+    color: white;
+  }
+  #zaehler {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>Test-Arbeitsblatt</h1>
+<p>Klicke auf die markierten Wörter im Text. Sie wechseln die Farbe.</p>
+
+<p>
+  Der <span class="klick" onclick="toggle(this)">Apfel</span> ist gesund,
+  genauso wie die <span class="klick" onclick="toggle(this)">Karotte</span>.
+  Auch <span class="klick" onclick="toggle(this)">Vollkornbrot</span> gehört
+  zu einer ausgewogenen Ernährung, im Gegensatz zu zu viel
+  <span class="klick" onclick="toggle(this)">Zucker</span>.
+</p>
+
+<p id="zaehler">Angeklickt: 0</p>
+
+<script>
+  let zaehler = 0;
+  function toggle(el) {
+    el.classList.toggle('aktiv');
+    zaehler += el.classList.contains('aktiv') ? 1 : -1;
+    document.getElementById('zaehler').textContent = 'Angeklickt: ' + zaehler;
+  }
+</script>
+
+</body>
+</html>

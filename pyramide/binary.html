@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>8-Bit Binärsystem</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .bit-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .square {
+      width: 150px;
+      height: 150px;
+      border: 2px solid black;
+      display: grid;
+      justify-items: center;
+      align-items: center;
+      gap: 3px;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background-color: black;
+      border-radius: 50%;
+    }
+
+    .hidden {
+      visibility: hidden;
+    }
+
+    .bit-value {
+      margin-top: 10px;
+      font-size: 80px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    #value {
+      font-size: 22px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <label>
+      Bits:
+      <input type="range" id="bitSlider" min="1" max="8" value="6" />
+      <span id="bitCount">6</span>
+    </label>
+    <br/><br/>
+
+    <label>
+      <input type="checkbox" id="toggleDecimal" checked />
+      Dezimalzahl anzeigen
+    </label>
+
+    <br/>
+
+    <label>
+      <input type="checkbox" id="toggleBinary" checked />
+      Binärzahl anzeigen
+    </label>
+  </div>
+
+  <div class="container" id="container"></div>
+
+  <div id="valueContainer">Dezimalzahl: <span id="value">0</span></div>
+
+  <script>
+    const container = document.getElementById('container');
+    const valueDisplay = document.getElementById('value');
+    const valueContainer = document.getElementById('valueContainer');
+
+    const slider = document.getElementById('bitSlider');
+    const bitCountLabel = document.getElementById('bitCount');
+
+    const toggleDecimal = document.getElementById('toggleDecimal');
+    const toggleBinary = document.getElementById('toggleBinary');
+
+    let bits = parseInt(slider.value);
+    let values = [];
+    let states = [];
+
+    let bitDigits = [];
+
+    function generateValues() {
+      values = [];
+      for (let i = 0; i < bits; i++) {
+        values.push(Math.pow(2, i));
+      }
+      values.reverse();
+    }
+
+    function getLayout(value) {
+      if (value <= 2) return { cols: value, rows: 1 };
+      if (value === 4) return { cols: 2, rows: 2 };
+      if (value === 8) return { cols: 4, rows: 2 };
+      if (value === 16) return { cols: 4, rows: 4 };
+      if (value === 32) return { cols: 8, rows: 4 };
+      if (value === 64) return { cols: 8, rows: 8 };
+
+      const cols = Math.ceil(Math.sqrt(value));
+      const rows = Math.ceil(value / cols);
+      return { cols, rows };
+    }
+
+    function createBit(value, index) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bit-wrapper';
+
+      const square = document.createElement('div');
+      square.className = 'square';
+
+      const { cols, rows } = getLayout(value);
+      square.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      square.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+      const dots = [];
+
+      for (let i = 0; i < rows * cols; i++) {
+        const cell = document.createElement('div');
+        cell.style.display = 'flex';
+        cell.style.justifyContent = 'center';
+        cell.style.alignItems = 'center';
+
+        if (i < value) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          cell.appendChild(dot);
+          dots.push(dot);
+        }
+
+        square.appendChild(cell);
+      }
+
+      const bitValue = document.createElement('div');
+      bitValue.className = 'bit-value';
+      bitValue.textContent = '1';
+
+      bitDigits[index] = bitValue;
+
+      square.addEventListener('click', () => {
+        states[index] = !states[index];
+        dots.forEach(dot => dot.classList.toggle('hidden'));
+        updateAll();
+      });
+
+      wrapper.appendChild(square);
+      wrapper.appendChild(bitValue);
+
+      return wrapper;
+    }
+
+    function updateValue() {
+      let total = 0;
+      for (let i = 0; i < bits; i++) {
+        if (states[i]) total += values[i];
+      }
+      valueDisplay.textContent = total;
+    }
+
+    function updateBinaryDigits() {
+      for (let i = 0; i < bits; i++) {
+        bitDigits[i].textContent = states[i] ? '1' : '0';
+      }
+    }
+
+    function updateAll() {
+      updateValue();
+      updateBinaryDigits();
+    }
+
+    function render() {
+      container.innerHTML = '';
+      bitDigits = [];
+
+      generateValues();
+      states = new Array(bits).fill(true);
+
+      values.forEach((value, index) => {
+        container.appendChild(createBit(value, index));
+      });
+
+      updateAll();
+    }
+
+    slider.addEventListener('input', () => {
+      bits = parseInt(slider.value);
+      bitCountLabel.textContent = bits;
+      render();
+    });
+
+    toggleDecimal.addEventListener('change', () => {
+      valueContainer.style.display = toggleDecimal.checked ? 'block' : 'none';
+    });
+
+    toggleBinary.addEventListener('change', () => {
+      bitDigits.forEach(d => {
+        d.style.display = toggleBinary.checked ? 'block' : 'none';
+      });
+    });
+
+    bitCountLabel.textContent = bits;
+    render();
+  </script>
+
+</body>
+</html>

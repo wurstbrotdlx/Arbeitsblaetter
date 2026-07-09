@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Küchenplan">
+<meta name="theme-color" content="#c0392b">
+<title>Küchenplan s'Cämp 2026</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon.svg">
+<link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+<style>
+:root {
+  --tap: 44px;
+  --pad: 12px;
+  --gap: 8px;
+  --radius: 10px;
+  --bg: #f7f4ef;
+  --bg-elev: #ffffff;
+  --bg-sunken: #ede8df;
+  --fg: #222;
+  --fg-dim: #666;
+  --accent: #c0392b;
+  --accent-2: #8e44ad;
+  --ok: #27ae60;
+  --warn: #f39c12;
+  --danger: #c0392b;
+  --anaphylaxie: #c0392b;
+  --schwer: #d35400;
+  --mittel: #f39c12;
+  --leicht: #7f8c8d;
+  --border: #d8d0c0;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17140f;
+    --bg-elev: #221e18;
+    --bg-sunken: #100e0a;
+    --fg: #eee;
+    --fg-dim: #999;
+    --border: #3a342a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.2);
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 17px; line-height: 1.4; overscroll-behavior-y: contain; }
+body { padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); min-height: 100vh; display: flex; flex-direction: column; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; padding: 0; }
+input, select, textarea { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; min-height: var(--tap); }
+input[type="checkbox"] { min-height: 0; width: 28px; height: 28px; accent-color: var(--accent); cursor: pointer; }
+input[type="number"] { max-width: 100px; }
+select { background: var(--bg-elev); }
+a { color: var(--accent); text-decoration: none; }
+
+/* Header */
+header.app-header {
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  padding: 8px var(--pad);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+  position: sticky; top: 0; z-index: 5;
+}
+.app-header h1 {
+  font-size: 18px; margin: 0; line-height: 1.2; grid-column: 1;
+}
+.app-header h1 small { display: block; font-size: 12px; color: var(--fg-dim); font-weight: normal; }
+.header-tools { display: flex; gap: 6px; align-items: center; grid-column: 2; }
+.header-tools .backup-hint { font-size: 12px; color: var(--fg-dim); }
+.header-tools .backup-hint.warn { color: var(--warn); }
+.header-tools button.menu-btn {
+  min-width: var(--tap); min-height: var(--tap);
+  font-size: 22px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-sunken);
+}
+.allergie-banner {
+  grid-column: 1 / -1;
+  background: linear-gradient(90deg, #c0392b, #d35400);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex; gap: 8px; align-items: center;
+  line-height: 1.35;
+}
+.allergie-banner b { font-weight: 700; }
+.allergie-banner::before { content: "⚠"; font-size: 18px; }
+
+/* Main */
+main.view-root { flex: 1; padding: var(--pad); padding-bottom: 90px; overflow-x: hidden; }
+
+/* Tab bar */
+nav.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 4px env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  z-index: 4;
+}
+nav.tabbar button {
+  flex: 1;
+  min-height: var(--tap);
+  padding: 4px 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  color: var(--fg-dim);
+  font-size: 11px;
+  border-radius: 6px;
+}
+nav.tabbar button.active { color: var(--accent); }
+nav.tabbar button .tab-ico { font-size: 20px; line-height: 1; }
+nav.tabbar button:hover { background: var(--bg-sunken); }
+@media (max-width: 380px) {
+  nav.tabbar button .tab-label { display: none; }
+}
+
+/* Utility */
+.tag-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
+.tag-tabs::-webkit-scrollbar { display: none; }
+.tag-tabs button {
+  min-height: var(--tap); padding: 4px 14px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: var(--bg-elev); white-space: nowrap;
+  font-size: 15px;
+}
+.tag-tabs button.active { background: var(--accent); color: white; border-color: var(--accent); }
+.tag-tabs button small { display: block; font-size: 11px; opacity: 0.7; }
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card h3 { margin: 0 0 8px 0; font-size: 17px; }
+.card h4 { margin: 0 0 6px 0; font-size: 15px; }
+.section-title { font-size: 20px; margin: 0 0 12px 0; font-weight: 700; }
+.subtle { color: var(--fg-dim); font-size: 13px; }
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-size: 12px; background: var(--bg-sunken); border: 1px solid var(--border);
+}
+.pill.anaphylaxie { background: var(--anaphylaxie); color: white; border-color: var(--anaphylaxie); }
+.pill.schwer { background: var(--schwer); color: white; border-color: var(--schwer); }
+.pill.mittel { background: var(--mittel); color: white; border-color: var(--mittel); }
+.pill.leicht { background: var(--leicht); color: white; border-color: var(--leicht); }
+.pill.unbekannt { background: var(--bg-sunken); color: var(--fg-dim); }
+.warn-icon { color: var(--warn); font-weight: 700; }
+.tool-btn {
+  min-height: var(--tap); padding: 6px 14px;
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px;
+  font-size: 15px;
+}
+.tool-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.tool-btn.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+
+/* Heute */
+.heute-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.heute-nav .day { flex: 1; text-align: center; font-size: 18px; font-weight: 600; }
+.heute-nav .day small { display: block; color: var(--fg-dim); font-size: 12px; font-weight: normal; }
+.heute-nav button { min-height: var(--tap); min-width: var(--tap); border-radius: 10px; background: var(--bg-elev); border: 1px solid var(--border); font-size: 20px; }
+.heute-schicht { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; }
+.heute-schicht .zeit { font-weight: 600; }
+.heute-schicht .assign { color: var(--fg-dim); font-size: 14px; }
+.progress-bar { height: 8px; border-radius: 4px; background: var(--bg-sunken); overflow: hidden; }
+.progress-bar > span { display: block; height: 100%; background: var(--ok); transition: width 200ms; }
+
+/* Team */
+.team-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
+.team-toolbar h2 { margin: 0; font-size: 20px; }
+.team-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.team-table { border-collapse: separate; border-spacing: 0; min-width: 100%; background: var(--bg-elev); border-radius: 10px; overflow: hidden; }
+.team-table th, .team-table td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 4px; font-size: 13px; text-align: center; }
+.team-table th { background: var(--bg-sunken); font-weight: 600; }
+.team-table th.day { border-bottom: 1px solid var(--border); }
+.team-table .person-cell { text-align: left; min-width: 150px; position: sticky; left: 0; background: var(--bg-elev); z-index: 1; }
+.team-table .person-cell .name { font-weight: 600; font-size: 14px; }
+.team-table .person-cell .roles { color: var(--fg-dim); font-size: 11px; }
+.team-table .person-cell .allergie { color: var(--warn); font-size: 11px; }
+.team-table .check-cell { cursor: pointer; user-select: none; min-width: var(--tap); height: var(--tap); }
+.team-table .check-cell.checked { background: var(--ok); color: white; font-weight: 700; }
+.team-table th.day-sep { border-left: 3px solid var(--border); }
+.team-table td.day-sep { border-left: 3px solid var(--border); }
+
+/* Dienstplan */
+.dp-schicht { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.dp-schicht .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.dp-schicht h3 { margin: 0; font-size: 17px; }
+.dp-schicht .zeit { color: var(--fg-dim); font-size: 14px; }
+.dp-schicht .inhalt { margin: 6px 0 10px 0; }
+.dp-rollen { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px; }
+.dp-rolle { display: flex; flex-direction: column; gap: 4px; }
+.dp-rolle label { font-size: 12px; color: var(--fg-dim); }
+.dp-rolle select { min-height: var(--tap); }
+
+/* Aufgaben */
+.aufg-schicht { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.aufg-schicht summary { padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; list-style: none; }
+.aufg-schicht summary::-webkit-details-marker { display: none; }
+.aufg-schicht summary::before { content: "▸"; font-size: 12px; transition: transform 200ms; }
+.aufg-schicht[open] summary::before { transform: rotate(90deg); }
+.aufg-schicht summary .schicht-title { flex: 1; font-size: 16px; font-weight: 600; }
+.aufg-schicht summary .progress-info { font-size: 13px; color: var(--fg-dim); display: flex; gap: 8px; align-items: center; }
+.aufg-schicht summary .progress-bar { width: 60px; }
+.aufg-task { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: start; padding: 8px 12px; border-top: 1px solid var(--border); }
+.aufg-task.done .task-text { text-decoration: line-through; color: var(--fg-dim); }
+.aufg-task .task-text { padding: 6px 0; }
+.aufg-task .task-text .hinweis { display: block; font-size: 13px; color: var(--fg-dim); margin-top: 2px; }
+.aufg-task .task-wers { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+.aufg-task .task-wers select { font-size: 13px; min-height: 36px; padding: 4px 6px; }
+.aufg-task .task-actions { display: flex; align-items: start; }
+.aufg-add { padding: 8px 12px; border-top: 1px solid var(--border); background: var(--bg-sunken); }
+.aufg-add button { min-height: var(--tap); padding: 6px 14px; background: transparent; border: 1px dashed var(--border); border-radius: 8px; width: 100%; color: var(--fg-dim); }
+
+/* Allergien */
+.alg-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.alg-card.anaphylaxie-risiko { border-color: var(--anaphylaxie); border-width: 2px; background: linear-gradient(180deg, rgba(192,57,43,.08), transparent); }
+.alg-card.schwer { border-color: var(--schwer); border-width: 2px; }
+.alg-card h4 { margin: 0 0 6px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.alg-card .field-row { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; align-items: center; margin: 4px 0; font-size: 14px; }
+.alg-card .field-row label { color: var(--fg-dim); font-size: 12px; }
+.alg-card .field-row input, .alg-card .field-row textarea { width: 100%; min-height: 36px; padding: 6px 8px; font-size: 14px; }
+.alg-card .field-row textarea { min-height: 60px; }
+.alg-card .kueche-note { background: var(--bg-sunken); padding: 8px; border-radius: 6px; font-size: 13px; margin-top: 6px; white-space: pre-line; }
+.sichtkarte-table { width: 100%; border-collapse: collapse; }
+.sichtkarte-table td { padding: 8px; border-top: 1px solid var(--border); vertical-align: top; font-size: 14px; }
+.sichtkarte-table td.allergen { font-weight: 700; min-width: 100px; }
+
+/* Speiseplan */
+.sp-tag-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.sp-tag-card > h3 { margin: 0 0 12px 0; font-size: 18px; }
+.sp-mahlzeit { padding: 10px 0; border-top: 1px solid var(--border); }
+.sp-mahlzeit:first-of-type { border-top: 0; }
+.sp-mahlzeit h4 { margin: 0 0 4px 0; font-size: 15px; color: var(--fg-dim); }
+.sp-mahlzeit .gericht { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.sp-mahlzeit details { margin: 6px 0; }
+.sp-mahlzeit summary { cursor: pointer; padding: 4px 0; font-size: 14px; color: var(--accent); }
+.sp-mahlzeit summary::-webkit-details-marker { display: none; }
+.sp-mahlzeit summary::before { content: "▸ "; }
+.sp-mahlzeit details[open] summary::before { content: "▾ "; }
+.sp-mahlzeit .info-body { font-size: 14px; color: var(--fg-dim); padding: 4px 0 4px 12px; white-space: pre-line; }
+.sp-zk { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; padding: 6px 8px; background: var(--bg-sunken); border-radius: 6px; font-size: 13px; }
+.sp-zk.done { text-decoration: line-through; opacity: 0.6; }
+
+/* Mengen */
+.mengen-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.mengen-controls label { display: flex; flex-direction: column; gap: 4px; }
+.mengen-controls .label-text { font-size: 12px; color: var(--fg-dim); }
+.mengen-controls input[type="number"] { font-size: 20px; font-weight: 700; text-align: center; max-width: 120px; min-height: var(--tap); }
+.mengen-table { width: 100%; border-collapse: collapse; background: var(--bg-elev); border-radius: 10px; overflow: hidden; }
+.mengen-table th, .mengen-table td { padding: 8px 10px; border-top: 1px solid var(--border); text-align: left; vertical-align: top; }
+.mengen-table th { background: var(--bg-sunken); font-size: 13px; }
+.mengen-table td.gesamt { font-weight: 700; font-size: 18px; text-align: right; white-space: nowrap; }
+.mengen-table td.per-person { color: var(--fg-dim); font-size: 13px; text-align: right; white-space: nowrap; }
+.mengen-table td.hinweis { font-size: 12px; color: var(--fg-dim); }
+.mengen-table tr.section td { background: var(--bg-sunken); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+.mengen-nie-vergessen { background: var(--warn); background: rgba(243,156,18,0.15); padding: 10px 12px; border-radius: 8px; margin-top: 12px; font-size: 14px; }
+
+/* Referenz */
+.ref-block { margin-bottom: 20px; }
+.ref-block h3 { margin: 0 0 8px 0; font-size: 18px; }
+.ref-block details { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+.ref-block summary { padding: 10px 12px; cursor: pointer; font-weight: 600; }
+.ref-block .ref-body { padding: 0 12px 12px 12px; }
+.ref-block table { width: 100%; border-collapse: collapse; }
+.ref-block td { padding: 4px 6px; vertical-align: top; font-size: 14px; }
+.ref-block td.wannWas { font-weight: 600; min-width: 130px; color: var(--fg-dim); }
+.ref-rolle { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+.ref-rolle h4 { margin: 0 0 6px 0; }
+.ref-rolle ul { margin: 0; padding-left: 20px; font-size: 14px; }
+.notruf-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: baseline; }
+.notruf-list dt { font-weight: 600; }
+.notruf-list dd { margin: 0; }
+
+/* Dialog */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: var(--bg-elev); border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.3); }
+.modal h3 { margin: 0 0 12px 0; }
+.modal .row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.modal .row label { font-size: 12px; color: var(--fg-dim); }
+.modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+
+/* Print */
+@media print {
+  header.app-header, nav.tabbar, .tag-tabs, .team-toolbar button, .aufg-add, .modal, .overlay { display: none !important; }
+  body { background: white; color: black; padding: 0; }
+  main.view-root { padding: 20px; padding-bottom: 20px; }
+  .card, .aufg-schicht, .ref-block details { break-inside: avoid; box-shadow: none; border: 1px solid #999; }
+  .aufg-schicht[open], .ref-block details { display: block; }
+  .aufg-schicht > *, .ref-block details > * { display: block; }
+  * { color: black !important; background: white !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Küchenplan s'Cämp 2026 <small id="header-untertitel"></small></h1>
+  <div class="header-tools">
+    <span class="backup-hint" id="backup-hint" hidden></span>
+    <button class="menu-btn" id="menu-btn" title="Menü">☰</button>
+  </div>
+  <div class="allergie-banner" id="allergie-banner" role="button" tabindex="0"></div>
+</header>
+
+<main class="view-root" id="view-root"></main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="heute"><span class="tab-ico">📅</span><span class="tab-label">Heute</span></button>
+  <button data-tab="team"><span class="tab-ico">👥</span><span class="tab-label">Team</span></button>
+  <button data-tab="dienstplan"><span class="tab-ico">📋</span><span class="tab-label">Dienstplan</span></button>
+  <button data-tab="aufgaben"><span class="tab-ico">✓</span><span class="tab-label">Aufgaben</span></button>
+  <button data-tab="allergien"><span class="tab-ico">⚠</span><span class="tab-label">Allergien</span></button>
+  <button data-tab="speiseplan"><span class="tab-ico">🍽</span><span class="tab-label">Speiseplan</span></button>
+  <button data-tab="mengen"><span class="tab-ico">⚖</span><span class="tab-label">Mengen</span></button>
+  <button data-tab="referenz"><span class="tab-ico">📖</span><span class="tab-label">Referenz</span></button>
+</nav>
+
+<script type="application/json" id="seed">{"schemaVersion":1,"generatedAt":null,"titel":"s'Cämp 2026 — Küchen-Dienstplan","untertitel":"Camp 29.07.–02.08.2026 · Aufbau 27./28.07. · Ort: Undingen","eckdaten":{"leitung":"Thomas Müller","stellvertretung":"","tnKinder":61,"tnMias":26,"camptelefon":"","standortKueche":"","notruf":"112","giftnotruf":"0761/19240","tnGesamt":87},"regeln":["• Allergien & Unverträglichkeiten → Sheet 'TN-Allergien'","• Vor jeder Schicht: 30 Sekunden Allergie-Check","• Bei Unsicherheit: lieber neue Portion separat zubereiten","• Hygiene: Hände, Kittel, getrennte Bretter (roh/gekocht)","• Tagesleitung der Küche entscheidet bei Konflikten"],"legende":[{"farbe":"gelb hinterlegt","bedeutung":"bitte ausfüllen / Daten ergänzen"},{"farbe":"rosa hinterlegt","bedeutung":"Sonderaufgabe / Achtung"},{"farbe":"grün hinterlegt","bedeutung":"erledigt / abgehakt"},{"farbe":"hellblau hinterlegt","bedeutung":"Tages-/Schicht-Header"}],"tage":[{"id":"Di 28.07.","label":"Di 28.07.","untertitel":"Aufbau","schichten":["Di 28.07.-E","Di 28.07.-M","Di 28.07.-A"]},{"id":"Mi 29.07.","label":"Mi 29.07.","untertitel":"Ankunft Kids","schichten":["Mi 29.07.-E","Mi 29.07.-M","Mi 29.07.-A","Mi 29.07.-S"]},{"id":"Do 30.07.","label":"Do 30.07.","untertitel":"Tag 1 voll","schichten":["Do 30.07.-E","Do 30.07.-F","Do 30.07.-M","Do 30.07.-A","Do 30.07.-S"]},{"id":"Fr 31.07.","label":"Fr 31.07.","untertitel":"Tag 2 voll","schichten":["Fr 31.07.-E","Fr 31.07.-F","Fr 31.07.-M","Fr 31.07.-A","Fr 31.07.-S"]},{"id":"Sa 01.08.","label":"Sa 01.08.","untertitel":"Tag 3 voll","schichten":["Sa 01.08.-E","Sa 01.08.-F","Sa 01.08.-M","Sa 01.08.-A","Sa 01.08.-S"]},{"id":"So 02.08.","label":"So 02.08.","untertitel":"Abreise","schichten":["So 02.08.-F","So 02.08.-ST","So 02.08.-AB"]}],"schichten":[{"id":"Di 28.07.-E","tag":"Di 28.07.","code":"E","label":"Einkauf","zeit":"vormittags","inhalt":"Lebensmittel-Einkauf nur falls nötig","rollen":[{"key":"einkauf_1","label":"Einkauf"},{"key":"einkauf_2","label":"Einkauf"}],"verfuegbarkeitVon":"Di 28.07.-M"},{"id":"Di 28.07.-M","tag":"Di 28.07.","code":"M","label":"Mittag","zeit":"12:00","inhalt":"Aufbau-Team Mittag (LKW)","rollen":[{"key":"einkauf_1","label":"Einkauf"},{"key":"einkauf_2","label":"Einkauf"}],"verfuegbarkeitVon":"Di 28.07.-M"},{"id":"Di 28.07.-A","tag":"Di 28.07.","code":"A","label":"Abend","zeit":"18:30","inhalt":"Aufbau-Team Abend + Mia-Camp-Sitzung 18:30","rollen":[{"key":"einkauf_1","label":"Einkauf"},{"key":"einkauf_2","label":"Einkauf"}],"verfuegbarkeitVon":"Di 28.07.-A"},{"id":"Mi 29.07.-E","tag":"Mi 29.07.","code":"E","label":"Einkauf","zeit":"vormittags","inhalt":"Frische-Einkauf für Camp-Start (Brot, Milch, Obst, Gemüse)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Mi 29.07.-M"},{"id":"Mi 29.07.-M","tag":"Mi 29.07.","code":"M","label":"Mittag","zeit":"10:00–14:00","inhalt":"ERSTES TEAM-ESSEN — Mias in Ruhe vor Ankunft Kids","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Mi 29.07.-M"},{"id":"Mi 29.07.-A","tag":"Mi 29.07.","code":"A","label":"Abend","zeit":"15:30–20:00","inhalt":"Erstes Abendessen mit Kids — bewährt: einfach, klar (z.B. Spaghetti Bolognese / vegane Variante)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Mi 29.07.-A"},{"id":"Mi 29.07.-S","tag":"Mi 29.07.","code":"S","label":"Spät","zeit":"ca. 21:00","inhalt":"Lagerfeuer: Snacks/Getränke bereitstellen (klein)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Mi 29.07.-S"},{"id":"Do 30.07.-E","tag":"Do 30.07.","code":"E","label":"Einkauf","zeit":"nach Bedarf","inhalt":"Nachkauf falls nötig (frisches Brot, Gemüse)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Do 30.07.-M"},{"id":"Do 30.07.-F","tag":"Do 30.07.","code":"F","label":"Frühstück","zeit":"06:30–09:30","inhalt":"Frühstück 08:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Do 30.07.-F"},{"id":"Do 30.07.-M","tag":"Do 30.07.","code":"M","label":"Mittag","zeit":"10:00–14:00","inhalt":"Mittagessen 12:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Do 30.07.-M"},{"id":"Do 30.07.-A","tag":"Do 30.07.","code":"A","label":"Abend","zeit":"15:30–20:00","inhalt":"Abendessen 18:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Do 30.07.-A"},{"id":"Do 30.07.-S","tag":"Do 30.07.","code":"S","label":"Spät","zeit":"ca. 20:30","inhalt":"Lagerfeuer Stockbrot/Marshmallows — Teig","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Do 30.07.-S"},{"id":"Fr 31.07.-E","tag":"Fr 31.07.","code":"E","label":"Einkauf","zeit":"nach Bedarf","inhalt":"Nachkauf falls nötig","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Fr 31.07.-M"},{"id":"Fr 31.07.-F","tag":"Fr 31.07.","code":"F","label":"Frühstück","zeit":"06:30–09:30","inhalt":"Frühstück 08:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Fr 31.07.-F"},{"id":"Fr 31.07.-M","tag":"Fr 31.07.","code":"M","label":"Mittag","zeit":"10:00–14:00","inhalt":"Mittagessen 12:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Fr 31.07.-M"},{"id":"Fr 31.07.-A","tag":"Fr 31.07.","code":"A","label":"Abend","zeit":"15:30–20:00","inhalt":"Abendessen 18:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Fr 31.07.-A"},{"id":"Fr 31.07.-S","tag":"Fr 31.07.","code":"S","label":"Spät","zeit":"ca. 20:30","inhalt":"Casinoabend: Fingerfood/Knabberzeug","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Fr 31.07.-S"},{"id":"Sa 01.08.-E","tag":"Sa 01.08.","code":"E","label":"Einkauf","zeit":"nach Bedarf","inhalt":"Nachkauf falls nötig (Sa kann Geschäfte zu sein → früher planen!)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Sa 01.08.-M"},{"id":"Sa 01.08.-F","tag":"Sa 01.08.","code":"F","label":"Frühstück","zeit":"06:30–09:30","inhalt":"Frühstück 08:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Sa 01.08.-F"},{"id":"Sa 01.08.-M","tag":"Sa 01.08.","code":"M","label":"Mittag","zeit":"10:00–14:00","inhalt":"Mittagessen 12:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Sa 01.08.-M"},{"id":"Sa 01.08.-A","tag":"Sa 01.08.","code":"A","label":"Abend","zeit":"15:30–20:00","inhalt":"Abendessen 18:30","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Sa 01.08.-A"},{"id":"Sa 01.08.-S","tag":"Sa 01.08.","code":"S","label":"Spät","zeit":"ca. 20:30","inhalt":"Filmabend: Popcorn (Popcornmensch) — Küche stellt ggf. Getränke","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"Sa 01.08.-S"},{"id":"So 02.08.-F","tag":"So 02.08.","code":"F","label":"Frühstück","zeit":"06:30–09:30","inhalt":"Frühstück 08:30 (letztes warmes Mal)","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"So 02.08.-F"},{"id":"So 02.08.-ST","tag":"So 02.08.","code":"ST","label":"Ständerling","zeit":"12:30–13:00","inhalt":"Häppchen / Fingerfood zur Verabschiedung — kein Mittagessen","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"So 02.08.-ST"},{"id":"So 02.08.-AB","tag":"So 02.08.","code":"AB","label":"Abbau","zeit":"ab 13:00","inhalt":"Küche abbauen, reinigen, Restbestände sichern","rollen":[{"key":"leitung_1","label":"Leitung"},{"key":"einkauf_1","label":"Einkauf"},{"key":"ablaufleitung_essen_1","label":"Ablaufleitung Essen"},{"key":"köchin_koch_1","label":"Köchin/Koch"},{"key":"köchin_koch_2","label":"Köchin/Koch"},{"key":"springer_1","label":"Springer"}],"verfuegbarkeitVon":"So 02.08.-AB"}],"team":[{"id":"p1","name":"Thomas","rollen":["Leitung","Koch","Springer"],"handy":"0170 1234567","allergie":"Laktose","verfuegbarkeit":{"Di 28.07.-M":true,"Mi 29.07.-A":true,"Mi 29.07.-S":true,"Do 30.07.-F":true,"Do 30.07.-M":true,"Do 30.07.-A":true,"Do 30.07.-S":true,"Fr 31.07.-F":true,"Fr 31.07.-M":true,"Fr 31.07.-A":true,"Fr 31.07.-S":true,"Sa 01.08.-F":true,"Sa 01.08.-M":true,"Sa 01.08.-A":true,"Sa 01.08.-S":true,"So 02.08.-F":true,"So 02.08.-ST":true,"So 02.08.-AB":true}},{"id":"p2","name":"Sabine","rollen":["Stellvertretung","Einkauf","Springer"],"handy":"","allergie":"","verfuegbarkeit":{"Di 28.07.-M":true,"Mi 29.07.-A":true,"Mi 29.07.-S":true,"Do 30.07.-F":true,"Do 30.07.-M":true,"Do 30.07.-A":true,"Do 30.07.-S":true,"Fr 31.07.-F":true,"Fr 31.07.-M":true,"Fr 31.07.-A":true,"Fr 31.07.-S":true,"Sa 01.08.-F":true,"Sa 01.08.-M":true,"Sa 01.08.-A":true,"Sa 01.08.-S":true,"So 02.08.-F":true,"So 02.08.-ST":true,"So 02.08.-AB":true}},{"id":"p3","name":"Petra","rollen":["Köchin","Essensausgabe"],"handy":"","allergie":"","verfuegbarkeit":{}},{"id":"p4","name":"Andreas","rollen":["Einkauf","Koch","Springer"],"handy":"","allergie":"","verfuegbarkeit":{}},{"id":"p5","name":"Julia","rollen":["Ablaufleitung Essen","Essensausgabe","Köchin"],"handy":"","allergie":"","verfuegbarkeit":{}},{"id":"p6","name":"Claudia","rollen":["Köchin","Essensausgabe"],"handy":"","allergie":"","verfuegbarkeit":{}}],"rollenLegende":[{"rolle":"Küchenleitung","punkte":["Gesamtverantwortung Küche, Speiseplan, Mengen, Einkaufsplanung","Entscheidet bei Konflikten und Notfällen final","Koordiniert Team, Dienstplan, Springer-Einsatz","Ansprechpartner für Camp-Leitung"]},{"rolle":"Stellvertretung","punkte":["Übernimmt bei Ausfall der Küchenleitung vollständig","Kennt Speiseplan, Allergienliste, Einkaufsquellen genauso gut wie Küchenleitung","Zweite Unterschrift bei Geld/Kasse, falls relevant"]},{"rolle":"Köchin / Koch","punkte":["Bereitet Mahlzeiten laut Speiseplan zu","Beachtet Allergien- und Sonderkost-Kennzeichnung (eigenes Brett, eigener Topf)","Hält Arbeitsbereich hygienisch, räumt nach der Schicht auf"]},{"rolle":"Einkauf","punkte":["Fährt laut Einkaufsliste der Küchenleitung los","Prüft Frische, Mengen, Kühlkette beim Transport","EK nur auf Rechnung!"]},{"rolle":"Ablaufleitung Essen","punkte":["Kontrolliert vor Essensstart: Geschirr, Becher, Besteck, Ausgabe bereit, Zelt sauber","Gibt Startfreigabe an Küche","Kontrolliert nach dem Essen rückwärts: Zelt sauber, Geschirr zurück, Reste sicher verstaut","Hat mind. einen Helfer auf Abruf","Meldet Nachschubbedarf an Küche"]},{"rolle":"Essensausgabe","punkte":["Schöpft/verteilt Essen an der Ausgabestelle","Achtet auf korrekte Zuordnung von Sonderportionen (Name/Allergie)"]},{"rolle":"Springer","punkte":["wird Situationsabhängig eingesetzt","Kurzfristig einsetzbar bei Ausfall oder Ansturm","Sollte grob alle anderen Rollen kennen"]}],"dienstplanZuteilungen":{},"aufgaben":[{"id":"a-Di_2807-M-7","tag":"Di 28.07.","schicht":"Di 28.07.-M","aufgabe":"Zubereitung/Verpflegung Aufbau-Team","hinweis":"einfach & schnell, siehe Dienstplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-M-8","tag":"Di 28.07.","schicht":"Di 28.07.-M","aufgabe":"Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-M-9","tag":"Di 28.07.","schicht":"Di 28.07.-M","aufgabe":"Abräumen & Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-M-10","tag":"Di 28.07.","schicht":"Di 28.07.-M","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-M-11","tag":"Di 28.07.","schicht":"Di 28.07.-M","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-A-15","tag":"Di 28.07.","schicht":"Di 28.07.-A","aufgabe":"Zubereitung/Verpflegung Aufbau-Team","hinweis":"einfach & schnell, siehe Dienstplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-A-16","tag":"Di 28.07.","schicht":"Di 28.07.-A","aufgabe":"Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-A-17","tag":"Di 28.07.","schicht":"Di 28.07.-A","aufgabe":"Abräumen & Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-A-18","tag":"Di 28.07.","schicht":"Di 28.07.-A","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Di_2807-A-19","tag":"Di 28.07.","schicht":"Di 28.07.-A","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-25","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-26","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-27","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-28","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-29","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-30","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-31","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-32","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-33","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-34","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-M-35","tag":"Mi 29.07.","schicht":"Mi 29.07.-M","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-39","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Vorbereitung/Zubereitung Snack","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-40","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-41","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Abräumen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-42","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-43","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-44","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Punsch nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-SN-45","tag":"Mi 29.07.","schicht":"Mi 29.07.-SN","aufgabe":"Kaffee nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-49","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-50","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-51","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-52","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-53","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-54","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-55","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-56","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-57","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-58","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-A-59","tag":"Mi 29.07.","schicht":"Mi 29.07.-A","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-63","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Vorbereitung/Zubereitung","hinweis":"je nach Programm, siehe Speiseplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-64","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-65","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Aufsicht Punschfass","hinweis":"nie leer laufen lassen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-66","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Nachsorge","hinweis":"Müll raus, Bereich besenrein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-67","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Spüldienst","hinweis":"Restgeschirr","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-68","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Kaffee nachfüllen","hinweis":"falls noch Bedarf","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Mi_2907-S-69","tag":"Mi 29.07.","schicht":"Mi 29.07.-S","aufgabe":"Overnight-Oats für Do-Frühstück ansetzen","hinweis":"Bergfrühstück Do — Vorabend-Job","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-75","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-76","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-77","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-78","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-79","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-80","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-81","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-82","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-83","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-84","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-F-85","tag":"Do 30.07.","schicht":"Do 30.07.-F","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-89","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-90","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-91","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-92","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-93","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-94","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-95","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-96","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-97","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-98","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-M-99","tag":"Do 30.07.","schicht":"Do 30.07.-M","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-103","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Vorbereitung/Zubereitung Snack","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-104","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-105","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Abräumen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-106","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-107","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-108","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Punsch nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-SN-109","tag":"Do 30.07.","schicht":"Do 30.07.-SN","aufgabe":"Kaffee nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-113","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-114","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-115","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-116","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-117","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-118","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-119","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-120","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-121","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-122","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-A-123","tag":"Do 30.07.","schicht":"Do 30.07.-A","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-127","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Vorbereitung/Zubereitung","hinweis":"je nach Programm, siehe Speiseplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-128","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-129","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Aufsicht Punschfass","hinweis":"nie leer laufen lassen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-130","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Nachsorge","hinweis":"Müll raus, Bereich besenrein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-131","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Spüldienst","hinweis":"Restgeschirr","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-132","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Kaffee nachfüllen","hinweis":"falls noch Bedarf","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-133","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Stockbrot-Teig ansetzen","hinweis":"500g Mehl / 1 Pck. Trockenhefe / ½TL Salz / ~300ml warmes Wasser / 1EL Öl — pro 10 Kinder. Stöcke checken.","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-134","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Overnight-Oats für Fr-Frühstück ansetzen","hinweis":"Vorabend-Job","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Do_3007-S-135","tag":"Do 30.07.","schicht":"Do 30.07.-S","aufgabe":"Grießbrei für Fr-Frühstück andicken","hinweis":"morgens nur noch aufwärmen — entlastet die 6-Uhr-Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-141","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-142","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-143","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-144","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-145","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-146","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-147","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-148","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-149","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-150","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-F-151","tag":"Fr 31.07.","schicht":"Fr 31.07.-F","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-155","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-156","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-157","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-158","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-159","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-160","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-161","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-162","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-163","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-164","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-M-165","tag":"Fr 31.07.","schicht":"Fr 31.07.-M","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-169","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Vorbereitung/Zubereitung Snack","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-170","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-171","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Abräumen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-172","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-173","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-174","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Punsch nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-175","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Kaffee nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-SN-176","tag":"Fr 31.07.","schicht":"Fr 31.07.-SN","aufgabe":"Waffeleisen aufbauen","hinweis":"mind. 4 Eisen nötig — wer bringt welche mit?","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-180","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-181","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-182","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-183","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-184","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-185","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-186","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-187","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-188","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-189","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-190","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-A-191","tag":"Fr 31.07.","schicht":"Fr 31.07.-A","aufgabe":"Grill anheizen","hinweis":"Rind- + Veggie-Patty — Zange für Fleisch/Veggie getrennt halten","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-195","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Vorbereitung/Zubereitung","hinweis":"je nach Programm, siehe Speiseplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-196","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-197","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Aufsicht Punschfass","hinweis":"nie leer laufen lassen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-198","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Nachsorge","hinweis":"Müll raus, Bereich besenrein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-199","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Spüldienst","hinweis":"Restgeschirr","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Fr_3107-S-200","tag":"Fr 31.07.","schicht":"Fr 31.07.-S","aufgabe":"Kaffee nachfüllen","hinweis":"falls noch Bedarf","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-206","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-207","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-208","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-209","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-210","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-211","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-212","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-213","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-214","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-215","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-F-216","tag":"Sa 01.08.","schicht":"Sa 01.08.-F","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-220","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-221","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-222","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-223","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-224","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-225","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-226","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-227","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-228","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-229","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-230","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-M-231","tag":"Sa 01.08.","schicht":"Sa 01.08.-M","aufgabe":"Ofen einteilen","hinweis":"Gnocchi al forno — Timing mit Käse-Überbacken abstimmen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-235","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Vorbereitung/Zubereitung Snack","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-236","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-237","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Abräumen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-238","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-239","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Küche besenrein","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-240","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Punsch nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-SN-241","tag":"Sa 01.08.","schicht":"Sa 01.08.-SN","aufgabe":"Kaffee nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-245","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-246","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-247","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-248","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-249","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-250","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-251","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-252","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-253","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-254","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-A-255","tag":"Sa 01.08.","schicht":"Sa 01.08.-A","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-259","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Vorbereitung/Zubereitung","hinweis":"je nach Programm, siehe Speiseplan","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-260","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Bereitstellen/Ausgabe","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-261","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Aufsicht Punschfass","hinweis":"nie leer laufen lassen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-262","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Nachsorge","hinweis":"Müll raus, Bereich besenrein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-263","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Spüldienst","hinweis":"Restgeschirr","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-264","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Kaffee nachfüllen","hinweis":"falls noch Bedarf","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-265","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Milchreis für So-Frühstück vorkochen","hinweis":"Vorabend-Job, morgens nur aufwärmen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-Sa_0108-S-266","tag":"Sa 01.08.","schicht":"Sa 01.08.-S","aufgabe":"Popcorn bereitstellen","hinweis":"Popcornmensch übernimmt — Küche liefert Getränke/Schälchen, holt am Ende zurück","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-272","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Vorbereitung","hinweis":"Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-273","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Kochen/Zubereitung","hinweis":"SL führt, Helfer schnippeln/rühren – Sonderportionen separat (eigenes Brett/Topf)","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-274","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Tische decken","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-275","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Allergien-Check vor Ausgabe","hinweis":"30 Sek. — siehe Sheet 'TN-Allergien'","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-276","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Ausgabe","hinweis":"Allergiekinder zuerst, namentlich zuordnen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-277","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Abräumen","hinweis":"Reste sichern, Tische abwischen, Müll raus","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-278","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Spüldienst","hinweis":"Spülen, abtrocknen, einräumen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-279","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Töpfe scheuern","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-280","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Küche besenrein","hinweis":"Übergabe an nächste Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-281","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Punsch ansetzen & nachfüllen","hinweis":"Punschfass darf nie leer laufen","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-F-282","tag":"So 02.08.","schicht":"So 02.08.-F","aufgabe":"Kaffee aufsetzen & nachfüllen","hinweis":"muss immer da sein","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-286","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Häppchen-Buffet aufbauen","hinweis":"Eltern bringen mit, ggf. Reste verwerten","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-287","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Ausgabe/Betreuung","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-288","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Abbau Buffet","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-289","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Spüldienst","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-290","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Küche besenrein","hinweis":"Übergabe an Abbau-Schicht","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-ST-291","tag":"So 02.08.","schicht":"So 02.08.-ST","aufgabe":"Punsch/Kaffee letztmalig auffüllen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-AB-295","tag":"So 02.08.","schicht":"So 02.08.-AB","aufgabe":"Küche komplett abbauen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-AB-296","tag":"So 02.08.","schicht":"So 02.08.-AB","aufgabe":"Reinigen","hinweis":"Böden, Flächen, Kühlschrank leeren","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-AB-297","tag":"So 02.08.","schicht":"So 02.08.-AB","aufgabe":"Restbestände sichern","hinweis":"was mitgenommen, was entsorgt wird","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-AB-298","tag":"So 02.08.","schicht":"So 02.08.-AB","aufgabe":"Müll entsorgen","hinweis":"","wer1":null,"wer2":null,"erledigt":false,"custom":false},{"id":"a-So_0208-AB-299","tag":"So 02.08.","schicht":"So 02.08.-AB","aufgabe":"Endkontrolle Küche/Hütte","hinweis":"besenrein übergeben","wer1":null,"wer2":null,"erledigt":false,"custom":false}],"schichtAufgabenReferenz":[{"schichtTyp":"F","label":"Frühstück","zeitraum":"06:30–09:30","punkte":[{"wannWas":"Vorbereitung 06:30","aufgabe":"Wasser + Kaffee/Tee aufsetzen, Tische decken, Müsli/Cornflakes raus, Brot schneiden, Aufschnitt/Marmelade portionieren, Obst waschen"},{"wannWas":"Ausgabe 08:30","aufgabe":"Mias kommen 07:00 Morgenimpuls — bis 08:30 muss alles stehen. Allergien-Check vor Ausgabe."},{"wannWas":"Nachschub 08:45","aufgabe":"Brot/Kaffee/Wasser auffüllen, leere Schüsseln tauschen"},{"wannWas":"Abbau 09:15","aufgabe":"Tische abräumen, Reste verpacken (Kühlschrank), Tische wischen, Geschirr in die Spüle"},{"wannWas":"Abwasch","aufgabe":"Spülen, abtrocknen, einräumen, Spüle reinigen, Bodenwischen"},{"wannWas":"Übergabe","aufgabe":"Küche besenrein, Müll raus, an Mittagsschicht weitergeben"}]},{"schichtTyp":"M","label":"Mittag","zeitraum":"10:00–14:00","punkte":[{"wannWas":"Vorbereitung 10:00","aufgabe":"Rezept + TN-Zahl prüfen, Zutaten holen, Allergien-Liste lesen, Sonderportionen markieren"},{"wannWas":"Kochen 10:30–12:15","aufgabe":"SL führt, Helfer schnippeln/rühren. Sonderportionen separat (eigenes Brett, eigener Topf)"},{"wannWas":"Tische decken 12:15","aufgabe":"Helfer 2 deckt parallel, Wasser auf Tische"},{"wannWas":"Ausgabe 12:30","aufgabe":"Allergiekinder zuerst (Sonderportion namentlich zuordnen). Klare Ansage: was ist drin?"},{"wannWas":"Abräumen 13:15","aufgabe":"Reste sichern, Tische abwischen, Müll raus"},{"wannWas":"Abwasch 13:30","aufgabe":"Spülen, Töpfe scheuern, Kühlschrank-Check (Reste beschriften mit Datum)"},{"wannWas":"Übergabe","aufgabe":"Küche besenrein, Notizen für Abendschicht auf dem Whiteboard"}]},{"schichtTyp":"A","label":"Abend","zeitraum":"15:30–20:00","punkte":[{"wannWas":"Vorbereitung 15:30","aufgabe":"Rezept + TN-Zahl, Allergien-Liste, Sonderportionen markieren, Material rauslegen"},{"wannWas":"Kochen 16:00–18:00","aufgabe":"SL führt. Backofen rechtzeitig vorheizen. Sonderportionen separat."},{"wannWas":"Tische decken 18:00","aufgabe":"Helfer 2, Wasser/Saft auf Tische"},{"wannWas":"Ausgabe 18:30","aufgabe":"Allergiekinder zuerst, dann Rest. Mias essen mit den Kids."},{"wannWas":"Abräumen 19:15","aufgabe":"Reste sichern, Tische abwischen"},{"wannWas":"Abwasch 19:30","aufgabe":"Spülen, Töpfe, Kühlschrank-Check"},{"wannWas":"Übergabe","aufgabe":"Frühstücks-Vorbereitung anstoßen: Brot, Müsli, Aufschnitt für nächsten Morgen rauslegen"}]},{"schichtTyp":"S","label":"Spät / Snack","zeitraum":"ca. 20:30–22:00 (Mi–Sa)","punkte":[{"wannWas":"Stockbrot Do","aufgabe":"Teig: 500g Mehl, 1 Päck. Trockenhefe, ½ TL Salz, ~300ml warmes Wasser, 1 EL Öl — pro 10 Kinder. Stöcke checken."},{"wannWas":"Casino Fr","aufgabe":"Fingerfood: Brezeln, Salzstangen, Chips, Obstspieße, Wasser/Saft. Allergiefreie Schale separat."},{"wannWas":"Popcorn Sa","aufgabe":"Popcornmensch macht's. Küche stellt Getränke und Schälchen, holt am Ende zurück."},{"wannWas":"Nachsorge","aufgabe":"Müll raus, Restbestände wegräumen, Bereich besenrein"}]}],"allergien":[{"id":"al1","name":"Mia Krause","alter":13,"allergie":"Erdnuss","schweregrad":"Anaphylaxie-Risiko","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Schweregrad + Notfallset (EpiPen?) bei Eltern erfragen. Keine Erdnussprodukte, Zutatenlisten prüfen."},{"id":"al2","name":"Lena Hoffmann","alter":10,"allergie":"Nüsse (Schalenfrüchte)","schweregrad":"Anaphylaxie-Risiko","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Schweregrad + Notfallset bei Eltern erfragen. Keine Schalenfrüchte, Zutatenlisten prüfen."},{"id":"al3","name":"Emma Bauer","alter":9,"allergie":"Zöliakie (Gluten/Weizen)","schweregrad":"schwer","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Strikt glutenfrei. Kreuzkontamination vermeiden: eigenes Brett/Besteck, kein gemeinsames Nudelwasser, Mehlstaub."},{"id":"al4","name":"Hanna Schulz","alter":14,"allergie":"Laktose","schweregrad":"mittel","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche kocht durchgehend laktosefrei/-arm – keine Sonderportion mehr nötig."},{"id":"al5","name":"Ben Richter","alter":12,"allergie":"Laktose","schweregrad":"mittel","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche kocht durchgehend laktosefrei/-arm – keine Sonderportion mehr nötig."},{"id":"al6","name":"Lea König","alter":13,"allergie":"Laktose","schweregrad":"mittel","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche kocht durchgehend laktosefrei/-arm – keine Sonderportion mehr nötig. (In Anmeldung als Allergie nur Heuschnupfen genannt, Essen laktosefrei.)"},{"id":"al7","name":"Nele Kaiser","alter":9,"allergie":"Kreuzallergie (pollenassoziiert)","schweregrad":"leicht","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Führt Medikamente selbst. Küche i.d.R. nicht betroffen."},{"id":"al8","name":"Tim Neumann","alter":9,"allergie":"Weizen (Dinkel bevorzugt)","schweregrad":"leicht","notfallmedikation":"","elternAnsprechpartner":"","telefon":"","notizKueche":"Wo möglich Dinkel statt Weizen. Keine akute Allergie."},{"id":"al9","name":"Marie Schäfer","alter":"","allergie":"Asthma (keine Lebensmittel-Allergie)","schweregrad":"unbekannt","notfallmedikation":"Salbutamol Notfallspray","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche nicht betroffen, nur Medikamenten-Info."},{"id":"al10","name":"Jonas Frank","alter":"","allergie":"Asthma (keine Lebensmittel-Allergie)","schweregrad":"unbekannt","notfallmedikation":"Inhalierspray morgens/abends + Notfall, nimmt er selbstständig","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche nicht betroffen, nur Medikamenten-Info."},{"id":"al11","name":"Luca Berger","alter":"","allergie":"Pollenallergie (keine Lebensmittel-Allergie)","schweregrad":"unbekannt","notfallmedikation":"Allegra + Augentropfen nach Bedarf, kann er selber","elternAnsprechpartner":"","telefon":"","notizKueche":"Küche nicht betroffen, nur Medikamenten-Info."}],"sichtkarte":[{"allergen":"Erdnüsse","betrifft":"Mia Krause (Kind) | Sabine Wagner (Team)","sonderportion":"Ja, strikt getrennt"},{"allergen":"Nüsse (Schale)","betrifft":"Lena Hoffmann (Kind) | Bianca Horn, Sabine Wagner (Team)","sonderportion":"Ja, strikt getrennt"},{"allergen":"Milch / Laktose","betrifft":"Hanna Schulz, Ben Richter, Lea König (Kinder) | Thomas Müller, Julia (Team)","sonderportion":"Nein – ganze Küche kocht laktosefrei/-arm (Standard, keine Sonderportion)"},{"allergen":"Gluten / Weizen","betrifft":"Emma Bauer (Kind, strikt/Zöliakie) | Tim Neumann (Kind, Dinkel)","sonderportion":"Ja, glutenfrei (1x strikt)"},{"allergen":"Ei","betrifft":"","sonderportion":""},{"allergen":"Fisch","betrifft":"Sabine Wagner (Team)","sonderportion":"Kein Fisch als Hauptgericht"},{"allergen":"Sesam","betrifft":"","sonderportion":""},{"allergen":"Soja","betrifft":"","sonderportion":""},{"allergen":"Senf","betrifft":"","sonderportion":""},{"allergen":"Sellerie","betrifft":"","sonderportion":""},{"allergen":"Vegetarisch","betrifft":"Finn Lang, Sophie Schäfer, Clara Peters, Tim Neumann, Ida Sommer, Frieda Wolf (Kinder) | Nicole Braun, Melanie König (Team)","sonderportion":"Ja, 8 Portionen (Joos flexibel)"},{"allergen":"Vegan","betrifft":"Laura Vogel (Team)","sonderportion":"Ja, 1 Portion (kein Ei/Milch/Käse/Honig)"},{"allergen":"Andere","betrifft":"Nele Kaiser (Kind, Kreuzallergie) | Bianca Horn (Team: Kichererbsen + Apfel roh)","sonderportion":"Milena Eigenmed.; Carolin: keine Kichererbsen"}],"speiseplan":[{"tag":"Mi 29.07.","tagUntertitel":"Anreise","mahlzeit":"Snack ~16:00","gericht":"Willkommens-Blechkuchen (Marmor/Zitrone) + Wassermelone in Spalten","info":"Riecht nach Ankommen. Kuchen komplett vorbereitbar (Mi vormittags oder Di gebacken oder vom Team schon zuhause?)","sonderkost":"gf: 1 Blech glutenfrei (Emma). vegan: 1 kleines Blech o. Ei.","zuKlaeren":"Küchenmaschine für Teig am liebsten 2-3 Stück"},{"tag":"Mi 29.07.","tagUntertitel":"Anreise","mahlzeit":"Abend 18:30 · WARM","gericht":"Willkommens-Pasta: Tomaten-Basilikum-Sugo, Hack separat untergerührt, Reibekäse-Bar","info":"Bewusst der sichere Klassiker am chaotischen 1. Abend, aber richtig guter Sugo + Käse-Streu-Station statt lieblos.","sonderkost":"gf: Nudeln separat gekocht (eigenes Wasser, Emma). veg: Sugo ohne Hack (=Basis). vegan: Basis o. Käse.","zuKlaeren":""},{"tag":"Mi 29.07.","tagUntertitel":"Anreise","mahlzeit":"Spät ~21:00","gericht":"Lagerfeuer: Snacks/Getränke bereitstellen (klein)","info":"","sonderkost":"","zuKlaeren":""},{"tag":"Do 30.07.","tagUntertitel":"Tag 1 voll","mahlzeit":"Frühstück 08:30 · + SPECIAL","gericht":"Buffet-Basis + 'Bergfrühstück': buntes Rührei vom Blech (Schnittlauch) · Overnight-Oats zum schöpfen(Mi-Abend vorbereitet)","info":"Warmes Rührei aus dem Ofen-Blech = für Masse machbar. Overnights entlasten die 6-Uhr-Schicht enorm.","sonderkost":"gf: Rührei ist gf; gf-Brot/Oats separat. vegan: Oats o. Honig, Rührei-Ersatz optional. NUSSFREI: kein Nussmüsli offen.","zuKlaeren":""},{"tag":"Do 30.07.","tagUntertitel":"Tag 1 voll","mahlzeit":"Mittag 12:30 · WARM · Bar","gericht":"Wilder Westen Pfanne: Reis, Tomatensalsa mexikanisch, Hack separat, Topping-Straße (Bohnen,Paprika, Käse, Sauerrahm, Mais, Gurke, Nachos)","info":"Chili neu gedacht als Selbstbau-Bowl. Von Natur aus gf + lf in der Basis. Kinder lieben Selbstzusammenstellen.","sonderkost":"Basis gf+lf+veg+vegan. Hack + Käse + Sauerrahm nur als Topping. KEINE Kichererbsen (Carolin). Nachos gf prüfen.","zuKlaeren":"Genügend Servierschüsseln? 10 Schüsseln x 2 Stationen"},{"tag":"Do 30.07.","tagUntertitel":"Tag 1 voll","mahlzeit":"Snack ~16:00","gericht":"Mini-Pizzaschnecken aus dem Ofen + Gemüse-Sticks (Karotte, Gurke und Kirschtomaten)","info":"Herzhaft + sättigend, trägt hungrige Jungs bis 18:30. Nutzt den Ofen zwischen den Warm-Schichten.","sonderkost":"gf: 1 Charge gf-Teig (Emma). vegan: Charge o. Käse. NUSSFREI-Dip (kein Pesto mit Nüssen).","zuKlaeren":""},{"tag":"Do 30.07.","tagUntertitel":"Tag 1 voll","mahlzeit":"Abend 18:30 · WARM (leicht)","gericht":"Ofenkartoffel-/Wedges-Bar mit Dip-Straße (Knoblauch-Joghurt, Curry-Ketchup selbstgemacht, Guacamole) + Grillwurst vom Grill","info":"Bewusst leicht, weil danach Stockbrot am Feuer kommt. Wedges = Ofen anwerfen, fertig. Würste vorgrillen und Warmhalten.","sonderkost":"Wedges natürlich gf+vegan. Quark durchgehend lf (kein Extra-Schritt). Grillwurst + veg-Wurst getrennte Zange.","zuKlaeren":""},{"tag":"Do 30.07.","tagUntertitel":"Tag 1 voll","mahlzeit":"Spät ~20:30","gericht":"Stockbrot am Lagerfeuer + Marshmallows (Teig laut Küchen-Sheet)","info":"Programm-fix. Teig ansetzen: 500 g Mehl / 1 Pck. Trockenhefe / 300 ml Wasser / 1 EL Öl pro 10 Kinder.","sonderkost":"gf: kleine gf-Teigportion für Emma (eigener Stock). vegan: Teig ist vegan.","zuKlaeren":""},{"tag":"Fr 31.07.","tagUntertitel":"Tag 2 voll","mahlzeit":"Frühstück 08:30 · + SPECIAL","gericht":"Buffet-Basis + warmer Grießbrei-Topf mit Obst-Topping-Bar (Kirschen ausm Glas, Apfelmus, Beerenragout aus TK-Beeren) · Overnight-Oats","info":"Grießbrei am Vorabend andicken, morgens nur aufwärmen = Frühschicht-Entlastung. Topping-Bar macht ihn 'neu'.","sonderkost":"gf: Grieß ist Weizen → für Emma gf-Alternative (Reisbrei/Hirsebrei) im K100. vegan: pflanzl. Milch.","zuKlaeren":"Genügend Servierschüsseln?"},{"tag":"Fr 31.07.","tagUntertitel":"Tag 2 voll","mahlzeit":"Mittag 12:30 · WARM · Highlight","gericht":"Albgold-Käsespätzle-Fest: Spätzle, viel Röstzwiebel, Schnittlauch + Apfelmus + bunter Salat","info":"DAS Wohlfühl-Highlight. Bringt die gesponserten Albgold-Spätzle unter. Schwäbisch, kindersicher.","sonderkost":"gf: gf-Spätzle separat (Emma, K100). Käse: durchgehend lange gereift (Bergkäse/Emmentaler 12+ Monate, von Natur aus fast laktosefrei) – kein Extra-Schritt. veg: ist automatisch veg. vegan: eihaltig → separate vegane Gemüse-Nudel-Pfanne für Johanna.","zuKlaeren":"Wer hat ne Madoline/Hobel?"},{"tag":"Fr 31.07.","tagUntertitel":"Tag 2 voll","mahlzeit":"Snack ~16:00 · + SPECIAL","gericht":"Waffel-Bar 'mal anders': Vanille-Buttermilch-Waffeln (welche mit Kirschen, mit Zartbitter und welche Natur)","info":"Waffeln als Nachmittags-Highlight statt Standard-Frühstück. Duftet durchs Camp, trägt bis zum Burger.","sonderkost":"gf: gf-Waffelteig-Charge (Emma, eigenes Eisen/Backpapier). Buttermilch: durchgehend laktosefrei einkaufen (ganze Menge, kein Sonderposten mehr). vegan: veganer Waffelteig-Rest. NUSSFREI-Drops.","zuKlaeren":"wer hat waffeleisen?? Wir brauchen min. 4"},{"tag":"Fr 31.07.","tagUntertitel":"Tag 2 voll","mahlzeit":"Abend 18:30 · WARM · Bar","gericht":"BurgerBoom. Rind- + Veggie-Patty, Käse separat, Salat/Tomate/Gurke/Zwiebel/Saucen, Buns (Ausgabeteam belegt)","info":"Grill-Highlight + Kinderhit. Selbstbau entlastet die Küche (Patties grillen, Rest = Ausgabeteam).","sonderkost":"gf: gf-Buns (Emma). Käse: durchgehend laktosearm/lf. veg: Veggie-Patty (auf ~8–10 planen!). vegan: Patty + Sauce o. Ei/Käse.","zuKlaeren":""},{"tag":"Fr 31.07.","tagUntertitel":"Tag 2 voll","mahlzeit":"Spät ~20:30","gericht":"Casino-Abend Fingerfood: Brezeln, Salzstangen, Chips, Obstspieße (Ananas, Melone, Kiwi), 2 bunte Longdrinks","info":"Programm-fix. Allergiefreie Schale separat stellen.","sonderkost":"gf/lf/vegan-Schale klar getrennt beschriften. NUSSFREI.","zuKlaeren":""},{"tag":"Sa 01.08.","tagUntertitel":"Tag 3 voll","mahlzeit":"Frühstück 08:30 · + SPECIAL","gericht":"Buffet-Basis + Arme Ritter / French Toast aus Restbrot, mit Zimtzucker + Apfelmus","info":"Reste-Verwertung (altes Brot) als Kinderhit. 'Waffel-Prinzip' fürs Frühstück, aber anders.","sonderkost":"gf: gf-Brot-Charge (Emma). vegan: ohne Ei schwierig → für Johanna Porridge/Obst.","zuKlaeren":""},{"tag":"Sa 01.08.","tagUntertitel":"Tag 3 voll","mahlzeit":"Mittag 12:30 · WARM · robust","gericht":"Gnocchi al forno: Gnocchi in Tomatensauce, mit Käse überbacken + Gurkensalat und Karottensalat","info":"Am 3. Tag ist das Team müde → Auflauf am Vormittag vorbereiten, in GN-Behälter, thermoport-tauglich. Ofen macht die Arbeit.","sonderkost":"gf: gf-Nudel-Charge im K100 (Emma). Sahne/Käse: durchgehend lf bzw. lange gereift. veg: Gemüse-Charge. vegan: kleine Charge o. Käse/Sahne.","zuKlaeren":"Wer hat ne Küchenmaschine zum raspeln?"},{"tag":"Sa 01.08.","tagUntertitel":"Tag 3 voll","mahlzeit":"Snack ~16:00","gericht":"Butter- Salzbrezeln/Laugenknoten + Melone","info":"frisch und herzhafter Komponente fürs Sattgefühl.","sonderkost":"gf: Laugengebäck ist Weizen → gf-Cracker für Emma. vegan: Sojajoghurt-Becher.","zuKlaeren":""},{"tag":"Sa 01.08.","tagUntertitel":"Tag 3 voll","mahlzeit":"Abend 18:30 · HALBWARM · Pfarrer","gericht":"Maultaschen in der Brühe + schwäbischer Kartoffelsalat (mit Brühe/Essig-Öl)","info":"Der Pfarrer-Wunsch, klassisch geehrt. Halbwarm + gemütlich vor dem Filmabend. Kartoffelsalat sommertauglich & laktosefrei.","sonderkost":"gf: Maultaschen sind Weizen → Emma: gf-Würstchen + Kartoffelsalat (ist gf). veg: Gemüse-/Spinat-Maultaschen. vegan: vegane Maultaschen o. Alternativteller.","zuKlaeren":""},{"tag":"Sa 01.08.","tagUntertitel":"Tag 3 voll","mahlzeit":"Spät ~20:30","gericht":"Filmabend: Popcorn (Popcornmensch) – Küche stellt Getränke + Schälchen","info":"Programm-fix.","sonderkost":"Popcorn ist gf/lf/vegan, wenn ohne Butter/mit Öl gemacht. NUSSFREI.","zuKlaeren":""},{"tag":"So 02.08.","tagUntertitel":"Abreise","mahlzeit":"Frühstück 08:30 · WARM · Abschied","gericht":"Buffet-Basis + Milchreis mit Zimtzucker, Apfelmus & warmen Kirschen","info":"Letztes warmes Mal, tröstlicher Abschied. Milchreis am Vorabend vorkochen, morgens aufwärmen.","sonderkost":"gf: Milchreis ist gf. Milch: komplett lf (ganze Menge, kein Split mehr). vegan: pflanzl. Milch-Charge.","zuKlaeren":""},{"tag":"So 02.08.","tagUntertitel":"Abreise","mahlzeit":"Ständerling 12:30 · kein Mittag","gericht":"Häppchen-Buffet zur Verabschiedung: bringen Eltern mit. Wenn Reste dann hier verwerten.","info":"Reste sinnvoll verwerten (Fibel: Reste-Buffet am Ende). Fingerfood zum Tschüss-Sagen.","sonderkost":"gf/lf/vegan-Ecke klar beschriften. NUSSFREI.","zuKlaeren":""}],"sonderkostBetroffene":[{"gruppe":"Erdnuss – ANAPHYLAXIE","personen":"Mia Krause (K) · Sabine Wagner (T)","kritisch":"Küche komplett erdnussfrei. Zutatenlisten prüfen."},{"gruppe":"Schalennüsse – ANAPHYLAXIE","personen":"Lena Hoffmann (K) · Bianca Horn, Sabine (T)","kritisch":"Küche komplett nussfrei. Kein Nussmüsli/Nutella/Nusspesto."},{"gruppe":"Zöliakie – STRIKT glutenfrei","personen":"Emma Bauer (K, 9)","kritisch":"Eigene Bretter/Kellen/Töpfe, kein gemeinsames Nudelwasser, Mehlstaub meiden. K100."},{"gruppe":"Weizen leicht / Dinkel","personen":"Tim Neumann (K, 9)","kritisch":"Wo möglich Dinkel statt Weizen. Keine akute Allergie."},{"gruppe":"Laktose (informativ)","personen":"Hanna Schulz, Ben Richter, Lea König (K) · Thomas, Julia (T)","kritisch":"Ganze Küche kocht jetzt durchgehend laktosefrei/-arm – keine Sonderportion mehr nötig (Milch/Sahne/Quark/Buttermilch: lf-Produkte; Käse: lange gereift)."},{"gruppe":"Vegetarisch (8x)","personen":"Finn Lang, Sophie Schäfer, Clara Peters, Tim Neumann, Ida S., Frieda W. (K) · Nicole Braun, Melanie König (T)","kritisch":"Mit Essenliste abgeglichen: 8 Personen. Joos isst auch Fleisch (flexibel)."},{"gruppe":"Vegan (1x)","personen":"Laura Vogel (T)","kritisch":"Kein Ei/Milch/Käse/Honig."},{"gruppe":"Kein Fisch als Hauptgericht","personen":"Sabine Wagner (T)","kritisch":"Kein Fisch geplant – erledigt."},{"gruppe":"Keine Kichererbsen","personen":"Bianca Horn (T)","kritisch":"Keine Kichererbsen geplant – erledigt."}],"sonderkostMatrix":[{"gericht":"Willkommens-Pasta","gf":"sep. Nudeln","lf":"✓ Käse durchgehend lf/gereift","veg":"Basis=veg","vegan":"o. Käse","kritisch":"Nudelwasser für Emma getrennt"},{"gericht":"Wilder Westen Pfanne (Bowl)","gf":"✓ natürlich","lf":"✓ Topping","veg":"Basis=veg","vegan":"o. Käse/Rahm","kritisch":"Nachos glutenfrei prüfen"},{"gericht":"Wedges-Bar + Grillwurst","gf":"✓ natürlich","lf":"✓ Quark durchgehend lf","veg":"o. Wurst","vegan":"o. Quark","kritisch":"Grillzange Fleisch/Veggie trennen"},{"gericht":"Käsespätzle-Fest","gf":"gf-Spätzle K100","lf":"✓ Käse lange gereift (Reifegrad)","veg":"✓ automatisch","vegan":"Extra-Gericht","kritisch":"Vegan = eigene Pfanne (eihaltig)"},{"gericht":"Burger vom Grill","gf":"gf-Buns","lf":"Käse sep.","veg":"Veggie-Patty","vegan":"Patty o. Ei/Käse","kritisch":"Veggie-Zahl! Buns gf besorgen"},{"gericht":"Gnocchi al forno","gf":"gf-Gnocchi K100 (Standard-Gnocchi = Weizen!)","lf":"✓ Sahne/Käse durchgehend lf/gereift","veg":"Gemüse-Charge","vegan":"kleine Charge o. Milch","kritisch":"4 Chargen = Ofen-Timing planen"},{"gericht":"Maultaschen + Kartoffelsalat","gf":"Ersatzteller*","lf":"✓ (Salat)","veg":"Gemüse-Maultasche","vegan":"vegane Maultasche","kritisch":"*Emma: gf-Wurst statt Maultasche"},{"gericht":"Milchreis (So)","gf":"✓ natürlich","lf":"✓ komplett lf-Milch","veg":"✓","vegan":"pflanzl. Milch","kritisch":"Kein Extra-Schritt mehr (komplett lf) – nur noch 4 Chargen (gf/veg/vegan/Basis) fürs Ofen-Timing."},{"gericht":"Grießbrei (Fr)","gf":"Reis-/Hirsebrei","lf":"✓ komplett lf-Milch","veg":"✓","vegan":"pflanzl. Milch","kritisch":"Grieß=Weizen → Emma Alternative"},{"gericht":"Waffel-Bar","gf":"gf-Teig, eig. Eisen","lf":"✓ lf-Buttermilch (ganze Menge)","veg":"✓","vegan":"veganer Teig","kritisch":"Waffeleisen für Emma getrennt"}],"mengen":{"portionen":90,"faktor":1.05,"positionen":[{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Albgold-Spätzle (Käsespätzle, Hauptger.)","perPerson":0.11,"unit":"kg","displayPerPerson":"0.11 kg","hinweis":"[kg] Gesponsert. ~110 g/Pers. roh. Kilozahl von Albgold hier gegenchecken."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Nudeln (Pasta Mi)","perPerson":0.11,"unit":"kg","displayPerPerson":"0.11 kg","hinweis":"[kg] 110 g/Pers. Hauptgericht."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Gnocchi (al forno Sa)","perPerson":0.22,"unit":"kg","displayPerPerson":"0.22 kg","hinweis":"[kg] ~220 g/Pers. (Gnocchi schwerer als Trockennudeln). gf-Charge für Emma separat."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Reis (Bowl Do)","perPerson":0.09,"unit":"kg","displayPerPerson":"0.09 kg","hinweis":"[kg] 90 g/Pers. roh."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Reis (Milchreis So)","perPerson":0.055,"unit":"kg","displayPerPerson":"0.055 kg","hinweis":"[kg] 1 l Milch : 250 g Reis (Fibel)."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Kartoffeln (Wedges Do)","perPerson":0.23,"unit":"kg","displayPerPerson":"0.23 kg","hinweis":"[kg] 230 g/Pers."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Kartoffeln festk. (Kartoffelsalat Sa)","perPerson":0.27,"unit":"kg","displayPerPerson":"0.27 kg","hinweis":"[kg] 270 g/Pers. für Salat."},{"sektion":"TROCKEN / GRUNDVORRAT (früh & groß kaufen)","name":"Grieß (Fr Frühstück)","perPerson":0.07,"unit":"kg","displayPerPerson":"0.07 kg","hinweis":"[kg] 70 g/Pers."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Hackfleisch gemischt (Pasta+Bowl, veg abziehen)","perPerson":0.09,"unit":"kg","displayPerPerson":"0.09 kg","hinweis":"[kg] NUR am Verbrauchstag! ~8 veg essen kein Hack."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Burger-Patties (Rind)","perPerson":1.6,"unit":"Stk","displayPerPerson":"1.6 Stk","hinweis":"[Stk] Hungrige Jungs oft 2. Plane 1,5–2/Pers."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Veggie-Patties","perPerson":null,"unit":"","displayPerPerson":"","hinweis":"≈ 12–15 Stück (Veg-Zahl klären!)."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Burger-Buns","perPerson":1.6,"unit":"Stk","displayPerPerson":"1.6 Stk","hinweis":"[Stk] + gf-Buns für Emma."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Grillwürste (Do Abend)","perPerson":1.2,"unit":"Stk","displayPerPerson":"1.2 Stk","hinweis":"[Stk] + veg-Würste separat."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Maultaschen (Sa Abend)","perPerson":2.3,"unit":"Stk","displayPerPerson":"2.3 Stk","hinweis":"[Stk] 2–3/Pers. + veg/gf-Alternativen."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Milch (Milchreis So)","perPerson":0.22,"unit":"l","displayPerPerson":"0.22 l","hinweis":"[l] ~250 g Reis je 1 l Milch. Komplett lf-Milch (ganze Menge, kein Split mehr)."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Käse gerieben (Käsespätzle Fr)","perPerson":0.06,"unit":"kg","displayPerPerson":"0.06 kg","hinweis":"[kg] ~60 g/Pers. (Fibel bis 75). Durchgehend lange gereifter Käse (Reifegrad), kein Split mehr."},{"sektion":"FRISCH / TAGESNAH (Kühlkette)","name":"Eier (Rührei Do)","perPerson":2.5,"unit":"Stk","displayPerPerson":"2.5 Stk","hinweis":"[Stk] 2–3/Pers. fürs Blech-Rührei."},{"sektion":"OBST / GEMÜSE / GETRÄNKE","name":"Obst gesamt (Obstkorb ganztags)","perPerson":0.15,"unit":"kg","displayPerPerson":"0.15 kg","hinweis":"[kg] 125–150 g/Pers./Tag, saisonal (Äpfel, Melone)."},{"sektion":"OBST / GEMÜSE / GETRÄNKE","name":"Salat/Rohkost (Beilage warme Tage)","perPerson":0.08,"unit":"kg","displayPerPerson":"0.08 kg","hinweis":"[kg] grün 50 g + Rohkost."},{"sektion":"OBST / GEMÜSE / GETRÄNKE","name":"Getränke (Wasser/Tee/Saft)","perPerson":1.5,"unit":"l","displayPerPerson":"1.5 l","hinweis":"[l] 1,5–2 l/Pers./Tag, an heißen Tagen mehr."},{"sektion":"Nie vergessen (Fibel 5.3):","name":"Gewürze/Kräuter, Öl, Essig, Zucker, Getränke/Sirup, Kaffeefilter, Küchenrolle, Alu-/Frischhaltefolie/Backpapier, Feuerzeug, Müllsäcke, Spülmittel/Schwämme. NUSSFREIE Aufstriche. gf-Grundstock (Nudeln, Spätzle, Buns, Mehl) für Emma.","perPerson":null,"unit":"","displayPerPerson":"","hinweis":""}],"nieVergessen":"Gewürze/Kräuter, Öl, Essig, Zucker, Getränke/Sirup, Kaffeefilter, Küchenrolle, Alu-/Frischhaltefolie/Backpapier, Feuerzeug, Müllsäcke, Spülmittel/Schwämme. NUSSFREIE Aufstriche. gf-Grundstock (Nudeln, Spätzle, Buns, Mehl) für Emma."},"lastMutationAt":0,"lastExportAt":0}</script>
+
+<script>
+// ============================================================
+// Store + Persistence
+// ============================================================
+const SEED = JSON.parse(document.getElementById('seed').textContent);
+const STORAGE_KEY = 'kp2026-v1';
+const SCHEMA_VERSION = 1;
+
+const store = {
+  state: null,
+  subs: new Set(),
+  init() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.schemaVersion === SCHEMA_VERSION) {
+          this.state = parsed;
+          return;
+        }
+      } catch (e) { console.warn('Seed corrupted, using defaults'); }
+    }
+    this.state = deepClone(SEED);
+  },
+  set(mutator, opts = {}) {
+    mutator(this.state);
+    if (!opts.silent) this.state.lastMutationAt = Date.now();
+    this.persist();
+    this.notify();
+  },
+  persistTimer: null,
+  persist() {
+    clearTimeout(this.persistTimer);
+    this.persistTimer = setTimeout(() => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); }
+      catch (e) { alert('Speichern fehlgeschlagen: ' + e.message); }
+    }, 400);
+  },
+  notify() { this.subs.forEach(f => f()); },
+  sub(f) { this.subs.add(f); return () => this.subs.delete(f); },
+  replace(newState) {
+    this.state = newState;
+    this.state.lastMutationAt = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    this.notify();
+  },
+};
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+// ============================================================
+// DOM helpers
+// ============================================================
+function el(tag, attrs = {}, children = []) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'checked' || k === 'disabled' || k === 'selected' || k === 'hidden' || k === 'open') {
+      if (v) e.setAttribute(k, ''); e[k] = !!v;
+    }
+    else e.setAttribute(k, v);
+  }
+  const kids = Array.isArray(children) ? children : [children];
+  for (const c of kids) {
+    if (c === null || c === undefined || c === false) continue;
+    e.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  return e;
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function fmtDateShort(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function timeAgo(ts) {
+  if (!ts) return 'nie';
+  const diff = Date.now() - ts;
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return 'gerade';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `vor ${m} Min`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return `vor ${h} h`;
+  const d = Math.floor(h / 24);
+  return `vor ${d} Tagen`;
+}
+
+// ============================================================
+// Domain helpers
+// ============================================================
+function shiftLabel(shiftId) {
+  const state = store.state;
+  const sh = state.schichten.find(s => s.id === shiftId);
+  if (sh) return `${sh.label} · ${sh.zeit || ''}`.trim().replace(/ · $/, '');
+  const parts = shiftId.split('-');
+  const code = parts[parts.length - 1];
+  const labels = { F: 'Frühstück', M: 'Mittag', A: 'Abend', S: 'Spät', SN: 'Snack', ST: 'Ständerling', AB: 'Abbau', E: 'Einkauf' };
+  return labels[code] || shiftId;
+}
+
+function availShiftKey(shiftId) {
+  const sh = store.state.schichten.find(s => s.id === shiftId);
+  if (sh && sh.verfuegbarkeitVon) return sh.verfuegbarkeitVon;
+  const parts = shiftId.split('-');
+  const day = parts.slice(0, -1).join('-');
+  const code = parts[parts.length - 1];
+  if (code === 'SN') return `${day}-A`;
+  if (code === 'E') return `${day}-M`;
+  return shiftId;
+}
+
+function teamForShift(shiftId) {
+  const key = availShiftKey(shiftId);
+  const avail = [], nonAvail = [];
+  for (const p of store.state.team) {
+    if (p.verfuegbarkeit && p.verfuegbarkeit[key]) avail.push(p);
+    else nonAvail.push(p);
+  }
+  return { avail, nonAvail };
+}
+
+function getAssign(shiftId, roleKey) {
+  return store.state.dienstplanZuteilungen?.[shiftId]?.[roleKey] || '';
+}
+
+function setAssign(shiftId, roleKey, personId) {
+  store.set(s => {
+    if (!s.dienstplanZuteilungen) s.dienstplanZuteilungen = {};
+    if (!s.dienstplanZuteilungen[shiftId]) s.dienstplanZuteilungen[shiftId] = {};
+    if (personId) s.dienstplanZuteilungen[shiftId][roleKey] = personId;
+    else delete s.dienstplanZuteilungen[shiftId][roleKey];
+  });
+}
+
+function personName(pid) {
+  if (!pid) return '—';
+  const p = store.state.team.find(t => t.id === pid);
+  return p?.name || '?';
+}
+
+function personSelect(shiftId, currentValue, onChange, extraOpts = {}) {
+  const { avail, nonAvail } = teamForShift(shiftId);
+  const sel = el('select', {
+    'aria-label': extraOpts.label || 'Person',
+    'data-shift': shiftId,
+    onchange: (e) => onChange(e.target.value || null),
+  });
+  sel.appendChild(el('option', { value: '' }, '—'));
+  const availGroup = el('optgroup', { label: 'Verfügbar' });
+  for (const p of avail) {
+    availGroup.appendChild(el('option', { value: p.id, selected: p.id === currentValue }, p.name));
+  }
+  sel.appendChild(availGroup);
+  if (nonAvail.length > 0) {
+    const grp = el('optgroup', { label: '⚠ nicht eingetragen für diese Schicht' });
+    for (const p of nonAvail) {
+      grp.appendChild(el('option', { value: p.id, selected: p.id === currentValue }, p.name));
+    }
+    sel.appendChild(grp);
+  }
+  return sel;
+}
+
+function assignmentWarn(shiftId, personId) {
+  if (!personId) return false;
+  const key = availShiftKey(shiftId);
+  const p = store.state.team.find(t => t.id === personId);
+  return !!(p && !p.verfuegbarkeit?.[key]);
+}
+
+function taskProgress(schichtId) {
+  const total = store.state.aufgaben.filter(a => a.schicht === schichtId).length;
+  const done = store.state.aufgaben.filter(a => a.schicht === schichtId && a.erledigt).length;
+  return { total, done };
+}
+
+// ============================================================
+// Router
+// ============================================================
+let activeTab = 'heute';
+let heuteTagId = null;
+let dpTagId = null;
+let aufgTagId = null;
+
+function currentDayFromDate() {
+  const today = new Date();
+  const state = store.state;
+  for (const t of state.tage) {
+    const m = t.id.match(/(\d{2})\.(\d{2})\./);
+    if (!m) continue;
+    if (today.getDate() === parseInt(m[1]) && today.getMonth() + 1 === parseInt(m[2])) return t.id;
+  }
+  return state.tage[0]?.id;
+}
+
+function goto(tab) {
+  activeTab = tab;
+  document.querySelectorAll('nav.tabbar button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  render();
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// Header render
+// ============================================================
+function renderHeader() {
+  const state = store.state;
+  document.getElementById('header-untertitel').textContent =
+    `${state.eckdaten.tnKinder || 0} Kinder · ${state.eckdaten.tnMias || 0} Mias · ${state.eckdaten.tnGesamt || 0} Portionen`;
+
+  const anaphNames = state.allergien.filter(a => a.schweregrad === 'Anaphylaxie-Risiko').map(a => a.name.split(' ')[0]);
+  const strikt = state.allergien.filter(a => a.schweregrad === 'schwer' && /Zöliakie|Gluten/i.test(a.allergie)).map(a => a.name.split(' ')[0]);
+  const laktParts = state.allergien.filter(a => /Laktose/i.test(a.allergie));
+  const banner = document.getElementById('allergie-banner');
+  banner.innerHTML = '';
+  const parts = [];
+  parts.push(el('span', { html: `<b>Küche NUSSFREI</b>` }));
+  if (laktParts.length > 0) parts.push(el('span', {}, ' · durchgehend laktosefrei'));
+  if (strikt.length > 0) parts.push(el('span', { html: ` · <b>${strikt.join(', ')}: strikt glutenfrei</b> (eigene Bretter/Töpfe)` }));
+  if (anaphNames.length > 0) parts.push(el('span', { html: ` · Anaphylaxie: <b>${anaphNames.join(', ')}</b>` }));
+  parts.forEach(p => banner.appendChild(p));
+  banner.onclick = () => goto('allergien');
+
+  const hint = document.getElementById('backup-hint');
+  const unsaved = (state.lastMutationAt || 0) > (state.lastExportAt || 0);
+  if (unsaved && state.lastExportAt) {
+    hint.hidden = false;
+    hint.textContent = `Letztes Backup: ${timeAgo(state.lastExportAt)}`;
+    hint.classList.toggle('warn', (Date.now() - (state.lastExportAt || 0)) > 6 * 3600 * 1000);
+    hint.onclick = openMenu;
+  } else if (!state.lastExportAt) {
+    hint.hidden = false;
+    hint.textContent = 'noch kein Backup';
+    hint.classList.add('warn');
+    hint.onclick = openMenu;
+  } else {
+    hint.hidden = true;
+  }
+}
+
+// ============================================================
+// Views
+// ============================================================
+const VIEWS = {};
+
+// -------- Heute --------
+VIEWS.heute = (root, state) => {
+  if (!heuteTagId) heuteTagId = currentDayFromDate();
+  const tag = state.tage.find(t => t.id === heuteTagId) || state.tage[0];
+  if (!tag) { root.appendChild(el('p', {}, 'Keine Tage im Plan.')); return; }
+
+  const idx = state.tage.findIndex(t => t.id === tag.id);
+  const nav = el('div', { class: 'heute-nav' });
+  nav.appendChild(el('button', { onclick: () => { heuteTagId = state.tage[Math.max(0, idx - 1)].id; render(); }, disabled: idx === 0 }, '‹'));
+  nav.appendChild(el('div', { class: 'day' }, [tag.label, el('small', {}, tag.untertitel || '')]));
+  nav.appendChild(el('button', { onclick: () => { heuteTagId = state.tage[Math.min(state.tage.length - 1, idx + 1)].id; render(); }, disabled: idx === state.tage.length - 1 }, '›'));
+  root.appendChild(nav);
+
+  // Anstehende Schichten
+  const schichten = state.schichten.filter(s => s.tag === tag.id);
+  if (schichten.length > 0) {
+    const card = el('div', { class: 'card' });
+    card.appendChild(el('h3', {}, 'Schichten heute'));
+    for (const sh of schichten) {
+      const zuteilung = state.dienstplanZuteilungen?.[sh.id] || {};
+      const namen = sh.rollen.map(r => zuteilung[r.key] ? `${r.label}: ${personName(zuteilung[r.key])}` : `${r.label}: —`);
+      const prog = taskProgress(sh.id);
+      const box = el('div', { class: 'heute-schicht', style: { padding: '8px 0', borderTop: '1px solid var(--border)' } });
+      box.appendChild(el('div', { class: 'zeit' }, `${sh.label}\n${sh.zeit || ''}`));
+      const right = el('div');
+      right.appendChild(el('div', {}, sh.inhalt || ''));
+      right.appendChild(el('div', { class: 'assign' }, namen.length ? namen.join(' · ') : '(keine Rollen)'));
+      if (prog.total > 0) {
+        const pb = el('div', { class: 'progress-bar', style: { marginTop: '4px', maxWidth: '200px' } });
+        pb.appendChild(el('span', { style: { width: `${(prog.done / prog.total) * 100}%` } }));
+        right.appendChild(pb);
+        right.appendChild(el('div', { class: 'subtle' }, `${prog.done} / ${prog.total} Aufgaben`));
+      }
+      box.appendChild(right);
+      card.appendChild(box);
+    }
+    root.appendChild(card);
+  }
+
+  // Offene Aufgaben
+  const offene = state.aufgaben.filter(a => a.tag === tag.id && !a.erledigt);
+  const card2 = el('div', { class: 'card' });
+  card2.appendChild(el('h3', {}, `Offene Aufgaben (${offene.length})`));
+  if (offene.length === 0) {
+    card2.appendChild(el('p', { class: 'subtle' }, 'Alles erledigt 🎉'));
+  } else {
+    for (const a of offene.slice(0, 30)) {
+      const row = el('div', { style: { padding: '6px 0', borderTop: '1px solid var(--border)', display: 'flex', gap: '8px' } });
+      const cb = el('input', { type: 'checkbox', onchange: () => toggleTask(a.id) });
+      row.appendChild(cb);
+      const tx = el('div', { style: { flex: '1' } });
+      tx.appendChild(el('div', {}, a.aufgabe));
+      const wer1 = a.wer1 ? personName(a.wer1) : '?';
+      const wer2 = a.wer2 ? personName(a.wer2) : '';
+      tx.appendChild(el('div', { class: 'subtle' }, `${shiftLabel(a.schicht)} · ${wer1}${wer2 ? ' · ' + wer2 : ''}`));
+      row.appendChild(tx);
+      card2.appendChild(row);
+    }
+    if (offene.length > 30) {
+      card2.appendChild(el('p', { class: 'subtle' }, `… und ${offene.length - 30} mehr — siehe Aufgaben-Tab`));
+    }
+  }
+  root.appendChild(card2);
+};
+
+// -------- Team --------
+VIEWS.team = (root, state) => {
+  const bar = el('div', { class: 'team-toolbar' });
+  bar.appendChild(el('h2', {}, 'Team & Verfügbarkeit'));
+  bar.appendChild(el('button', { class: 'tool-btn primary', onclick: () => openPersonModal(null) }, '+ Person'));
+  root.appendChild(bar);
+  root.appendChild(el('p', { class: 'subtle' }, 'Zellen antippen zum Umschalten der Verfügbarkeit. Auf einen Namen tippen zum Bearbeiten.'));
+
+  const wrap = el('div', { class: 'team-table-wrap' });
+  const table = el('table', { class: 'team-table' });
+  const thead = el('thead');
+  const trDay = el('tr');
+  trDay.appendChild(el('th', { class: 'person-cell' }, 'Person'));
+  const shiftCols = [];
+  let lastDay = null;
+  for (const sh of state.schichten) {
+    if (sh.code === 'E' || sh.code === 'SN') continue;
+    shiftCols.push(sh);
+  }
+  // Group by day for header
+  const dayGroups = {};
+  for (const sh of shiftCols) {
+    if (!dayGroups[sh.tag]) dayGroups[sh.tag] = [];
+    dayGroups[sh.tag].push(sh);
+  }
+  for (const [day, shs] of Object.entries(dayGroups)) {
+    trDay.appendChild(el('th', { class: 'day day-sep', colspan: shs.length }, day));
+  }
+  thead.appendChild(trDay);
+  const trCode = el('tr');
+  trCode.appendChild(el('th', { class: 'person-cell' }));
+  let firstOfDay = true; let prevDay = null;
+  for (const sh of shiftCols) {
+    trCode.appendChild(el('th', { class: sh.tag !== prevDay ? 'day-sep' : '', title: sh.label }, sh.code));
+    prevDay = sh.tag;
+  }
+  thead.appendChild(trCode);
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  for (const p of state.team) {
+    const tr = el('tr');
+    const nameCell = el('td', { class: 'person-cell', onclick: () => openPersonModal(p.id) });
+    nameCell.appendChild(el('div', { class: 'name' }, p.name));
+    if (p.rollen && p.rollen.length) nameCell.appendChild(el('div', { class: 'roles' }, p.rollen.join(' · ')));
+    if (p.allergie) nameCell.appendChild(el('div', { class: 'allergie' }, '⚠ ' + p.allergie));
+    tr.appendChild(nameCell);
+    prevDay = null;
+    for (const sh of shiftCols) {
+      const checked = !!(p.verfuegbarkeit && p.verfuegbarkeit[sh.id]);
+      const cell = el('td', {
+        class: `check-cell ${checked ? 'checked' : ''} ${sh.tag !== prevDay ? 'day-sep' : ''}`,
+        onclick: () => toggleAvail(p.id, sh.id),
+      }, checked ? '✓' : '');
+      tr.appendChild(cell);
+      prevDay = sh.tag;
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  root.appendChild(wrap);
+};
+
+function toggleAvail(personId, shiftId) {
+  store.set(s => {
+    const p = s.team.find(t => t.id === personId);
+    if (!p) return;
+    if (!p.verfuegbarkeit) p.verfuegbarkeit = {};
+    if (p.verfuegbarkeit[shiftId]) delete p.verfuegbarkeit[shiftId];
+    else p.verfuegbarkeit[shiftId] = true;
+  });
+}
+
+// -------- Dienstplan --------
+VIEWS.dienstplan = (root, state) => {
+  if (!dpTagId) dpTagId = currentDayFromDate();
+  root.appendChild(tagTabs('dienstplan', () => dpTagId, (id) => { dpTagId = id; render(); }));
+  const tag = state.tage.find(t => t.id === dpTagId);
+  if (!tag) return;
+  root.appendChild(el('h2', { class: 'section-title' }, [tag.label, ' — ', el('span', { class: 'subtle' }, tag.untertitel || '')]));
+  const schichten = state.schichten.filter(s => s.tag === tag.id);
+  for (const sh of schichten) {
+    const card = el('div', { class: 'dp-schicht' });
+    const head = el('div', { class: 'head' });
+    head.appendChild(el('h3', {}, sh.label));
+    head.appendChild(el('span', { class: 'zeit' }, sh.zeit || ''));
+    card.appendChild(head);
+    if (sh.inhalt) card.appendChild(el('div', { class: 'inhalt' }, sh.inhalt));
+    const grid = el('div', { class: 'dp-rollen' });
+    if (sh.rollen.length === 0) {
+      grid.appendChild(el('p', { class: 'subtle' }, '(keine Rollen für diese Schicht)'));
+    }
+    for (const r of sh.rollen) {
+      const container = el('div', { class: 'dp-rolle' });
+      const currentValue = getAssign(sh.id, r.key);
+      const labelText = r.label + (assignmentWarn(sh.id, currentValue) ? ' ⚠' : '');
+      container.appendChild(el('label', { for: `dp-${sh.id}-${r.key}` }, labelText));
+      const sel = personSelect(sh.id, currentValue, (val) => setAssign(sh.id, r.key, val), { label: r.label });
+      sel.id = `dp-${sh.id}-${r.key}`;
+      container.appendChild(sel);
+      grid.appendChild(container);
+    }
+    card.appendChild(grid);
+    root.appendChild(card);
+  }
+};
+
+// -------- Aufgaben --------
+VIEWS.aufgaben = (root, state) => {
+  if (!aufgTagId) aufgTagId = currentDayFromDate();
+  root.appendChild(tagTabs('aufgaben', () => aufgTagId, (id) => { aufgTagId = id; render(); }));
+  const tag = state.tage.find(t => t.id === aufgTagId);
+  if (!tag) return;
+  root.appendChild(el('h2', { class: 'section-title' }, [tag.label, ' — ', el('span', { class: 'subtle' }, tag.untertitel || '')]));
+
+  // Collect unique shift IDs for this day, from aufgaben
+  const shiftIds = [];
+  const seen = new Set();
+  for (const a of state.aufgaben) {
+    if (a.tag !== tag.id) continue;
+    if (seen.has(a.schicht)) continue;
+    seen.add(a.schicht);
+    shiftIds.push(a.schicht);
+  }
+  // Sort by canonical order F, E, M, SN, A, S, ST, AB
+  const order = { F: 1, E: 2, M: 3, SN: 4, A: 5, S: 6, ST: 7, AB: 8 };
+  shiftIds.sort((x, y) => (order[x.split('-').pop()] || 99) - (order[y.split('-').pop()] || 99));
+
+  for (const shId of shiftIds) {
+    const aufg = state.aufgaben.filter(a => a.schicht === shId);
+    const done = aufg.filter(a => a.erledigt).length;
+    const totalStr = aufg.length > 0 ? `${done}/${aufg.length}` : '0/0';
+    const pct = aufg.length > 0 ? (done / aufg.length) * 100 : 0;
+
+    const det = el('details', { class: 'aufg-schicht', open: true });
+    const sum = el('summary');
+    sum.appendChild(el('div', { class: 'schicht-title' }, shiftLabel(shId)));
+    const progInfo = el('div', { class: 'progress-info' });
+    const pb = el('div', { class: 'progress-bar' });
+    pb.appendChild(el('span', { style: { width: `${pct}%` } }));
+    progInfo.appendChild(pb);
+    progInfo.appendChild(el('span', {}, totalStr));
+    sum.appendChild(progInfo);
+    det.appendChild(sum);
+
+    for (const a of aufg) {
+      const row = el('div', { class: `aufg-task ${a.erledigt ? 'done' : ''}` });
+      row.appendChild(el('input', { type: 'checkbox', checked: a.erledigt, onchange: () => toggleTask(a.id) }));
+      const tx = el('div', { class: 'task-text' });
+      tx.appendChild(el('span', {}, a.aufgabe));
+      if (a.hinweis) tx.appendChild(el('span', { class: 'hinweis' }, a.hinweis));
+      row.appendChild(tx);
+      const wers = el('div', { class: 'task-wers' });
+      wers.appendChild(personSelect(shId, a.wer1 || '', (val) => setTaskAssign(a.id, 'wer1', val), { label: 'Wer 1' }));
+      wers.appendChild(personSelect(shId, a.wer2 || '', (val) => setTaskAssign(a.id, 'wer2', val), { label: 'Wer 2' }));
+      const acts = el('div', { class: 'task-actions' });
+      if (a.custom) {
+        acts.appendChild(el('button', { class: 'tool-btn danger', onclick: () => { if (confirm('Aufgabe löschen?')) deleteTask(a.id); } }, '×'));
+      } else {
+        acts.appendChild(el('button', { class: 'tool-btn', onclick: () => editTaskInline(a.id) }, '✏'));
+      }
+      row.appendChild(el('div', { style: { gridColumn: '3', display: 'flex', flexDirection: 'column', gap: '4px' } }, [wers, acts]));
+      det.appendChild(row);
+    }
+    const add = el('div', { class: 'aufg-add' });
+    add.appendChild(el('button', { onclick: () => addTask(shId) }, '+ Aufgabe hinzufügen'));
+    det.appendChild(add);
+    root.appendChild(det);
+  }
+};
+
+function toggleTask(id) {
+  store.set(s => { const a = s.aufgaben.find(x => x.id === id); if (a) a.erledigt = !a.erledigt; });
+}
+function setTaskAssign(id, key, val) {
+  store.set(s => { const a = s.aufgaben.find(x => x.id === id); if (a) a[key] = val; });
+}
+function addTask(shId) {
+  const text = prompt('Aufgabe:');
+  if (!text) return;
+  const hint = prompt('Hinweis (optional):') || '';
+  store.set(s => {
+    const parts = shId.split('-');
+    const tag = parts.slice(0, -1).join('-');
+    s.aufgaben.push({
+      id: 'a-custom-' + (crypto.randomUUID?.() || Date.now()),
+      tag, schicht: shId,
+      aufgabe: text, hinweis: hint,
+      wer1: null, wer2: null, erledigt: false, custom: true,
+    });
+  });
+}
+function editTaskInline(id) {
+  const a = store.state.aufgaben.find(x => x.id === id);
+  if (!a) return;
+  const text = prompt('Aufgabe:', a.aufgabe);
+  if (text === null) return;
+  const hint = prompt('Hinweis:', a.hinweis || '');
+  if (hint === null) return;
+  store.set(s => { const t = s.aufgaben.find(x => x.id === id); if (t) { t.aufgabe = text; t.hinweis = hint; } });
+}
+function deleteTask(id) {
+  store.set(s => { s.aufgaben = s.aufgaben.filter(x => x.id !== id); });
+}
+
+// -------- Allergien --------
+const SEVERITY_ORDER = { 'Anaphylaxie-Risiko': 1, 'schwer': 2, 'mittel': 3, 'leicht': 4, 'unbekannt': 5 };
+VIEWS.allergien = (root, state) => {
+  root.appendChild(el('h2', { class: 'section-title' }, 'Allergien & Unverträglichkeiten'));
+  root.appendChild(el('p', { class: 'subtle' }, 'Vor jeder Ausgabe 30 Sekunden Check. Elternkontakt und Notfallmedikation im Camp nachtragen.'));
+
+  const sorted = [...state.allergien].sort((a, b) => (SEVERITY_ORDER[a.schweregrad] || 9) - (SEVERITY_ORDER[b.schweregrad] || 9));
+  for (const a of sorted) {
+    const cls = 'alg-card ' + (a.schweregrad === 'Anaphylaxie-Risiko' ? 'anaphylaxie-risiko' : a.schweregrad === 'schwer' ? 'schwer' : '');
+    const card = el('div', { class: cls });
+    const h4 = el('h4', {});
+    h4.appendChild(el('span', {}, a.name));
+    h4.appendChild(el('span', { class: 'pill ' + (a.schweregrad || 'unbekannt').toLowerCase().replace('-', '').replace(' ', '') }, a.schweregrad || 'unbekannt'));
+    if (a.alter) h4.appendChild(el('span', { class: 'subtle' }, `Alter: ${a.alter}`));
+    card.appendChild(h4);
+    card.appendChild(fieldRow('Allergie', a.allergie, (v) => updAll(a.id, 'allergie', v)));
+    card.appendChild(fieldRow('Notfallmed.', a.notfallmedikation, (v) => updAll(a.id, 'notfallmedikation', v)));
+    card.appendChild(fieldRow('Eltern', a.elternAnsprechpartner, (v) => updAll(a.id, 'elternAnsprechpartner', v)));
+    card.appendChild(fieldRow('Telefon', a.telefon, (v) => updAll(a.id, 'telefon', v), { type: 'tel' }));
+    if (a.notizKueche) {
+      const note = el('div', { class: 'kueche-note' }, a.notizKueche);
+      card.appendChild(note);
+    }
+    card.appendChild(el('details', { style: { marginTop: '6px' } }, [
+      el('summary', { class: 'subtle', style: { cursor: 'pointer' } }, 'Küchen-Notiz bearbeiten'),
+      fieldRow('Notiz', a.notizKueche, (v) => updAll(a.id, 'notizKueche', v), { textarea: true }),
+    ]));
+    root.appendChild(card);
+  }
+
+  // Sicht-Karte
+  root.appendChild(el('h2', { class: 'section-title', style: { marginTop: '24px' } }, 'Sicht-Karte für Küche'));
+  const skWrap = el('div', { class: 'card', style: { padding: '0' } });
+  const skTable = el('table', { class: 'sichtkarte-table' });
+  for (const s of state.sichtkarte) {
+    const tr = el('tr');
+    tr.appendChild(el('td', { class: 'allergen' }, s.allergen));
+    tr.appendChild(el('td', {}, [
+      el('div', { style: { fontWeight: '500', marginBottom: '4px' } }, s.betrifft || '—'),
+      el('div', { class: 'subtle' }, s.sonderportion || ''),
+    ]));
+    skTable.appendChild(tr);
+  }
+  skWrap.appendChild(skTable);
+  root.appendChild(skWrap);
+};
+
+function fieldRow(label, value, onChange, opts = {}) {
+  const row = el('div', { class: 'field-row' });
+  row.appendChild(el('label', {}, label));
+  const inp = opts.textarea
+    ? el('textarea', { onblur: (e) => onChange(e.target.value) }, value || '')
+    : el('input', { type: opts.type || 'text', value: value || '', onblur: (e) => onChange(e.target.value) });
+  row.appendChild(inp);
+  return row;
+}
+function updAll(id, key, val) {
+  store.set(s => { const a = s.allergien.find(x => x.id === id); if (a) a[key] = val; });
+}
+
+// -------- Speiseplan --------
+VIEWS.speiseplan = (root, state) => {
+  root.appendChild(el('h2', { class: 'section-title' }, 'Speiseplan'));
+  const days = {};
+  for (const p of state.speiseplan) {
+    if (!days[p.tag]) days[p.tag] = { untertitel: p.tagUntertitel, mahlzeiten: [] };
+    days[p.tag].mahlzeiten.push(p);
+  }
+  for (const [tag, info] of Object.entries(days)) {
+    const card = el('div', { class: 'sp-tag-card' });
+    card.appendChild(el('h3', {}, [tag, info.untertitel ? el('span', { class: 'subtle' }, ' — ' + info.untertitel) : null]));
+    for (const m of info.mahlzeiten) {
+      const box = el('div', { class: 'sp-mahlzeit' });
+      box.appendChild(el('h4', {}, m.mahlzeit));
+      box.appendChild(el('div', { class: 'gericht' }, m.gericht));
+      if (m.info) {
+        box.appendChild(el('details', {}, [
+          el('summary', {}, 'Info & Hintergrund'),
+          el('div', { class: 'info-body' }, m.info),
+        ]));
+      }
+      if (m.sonderkost) {
+        box.appendChild(el('details', {}, [
+          el('summary', {}, 'Sonderkost-Abzweig'),
+          el('div', { class: 'info-body' }, m.sonderkost),
+        ]));
+      }
+      if (m.zuKlaeren) {
+        const zk = el('div', { class: 'sp-zk' + ((state.speiseplanErledigt?.[m.tag + '|' + m.mahlzeit] || false) ? ' done' : '') });
+        zk.appendChild(el('input', {
+          type: 'checkbox',
+          checked: !!(state.speiseplanErledigt?.[m.tag + '|' + m.mahlzeit]),
+          onchange: () => toggleSpZk(m.tag, m.mahlzeit),
+        }));
+        zk.appendChild(el('span', {}, [el('b', {}, 'Zu klären: '), m.zuKlaeren]));
+        box.appendChild(zk);
+      }
+      card.appendChild(box);
+    }
+    root.appendChild(card);
+  }
+};
+function toggleSpZk(tag, mahlzeit) {
+  const key = tag + '|' + mahlzeit;
+  store.set(s => {
+    if (!s.speiseplanErledigt) s.speiseplanErledigt = {};
+    if (s.speiseplanErledigt[key]) delete s.speiseplanErledigt[key];
+    else s.speiseplanErledigt[key] = true;
+  });
+}
+
+// -------- Mengen --------
+VIEWS.mengen = (root, state) => {
+  root.appendChild(el('h2', { class: 'section-title' }, 'Mengengerüst'));
+  root.appendChild(el('p', { class: 'subtle' }, 'Faustwerte aus der Fibel. Portionen und Faktor anpassen, Gesamtmengen rechnen sich live neu.'));
+  const controls = el('div', { class: 'mengen-controls' });
+  controls.appendChild(el('label', {}, [
+    el('span', { class: 'label-text' }, 'Portionen (Kinder+Team+Puffer)'),
+    el('input', { type: 'number', value: state.mengen.portionen, min: 1, max: 500,
+      onchange: (e) => store.set(s => { s.mengen.portionen = parseInt(e.target.value) || 90; }),
+    }),
+  ]));
+  controls.appendChild(el('label', {}, [
+    el('span', { class: 'label-text' }, 'Alters-/Hungerfaktor'),
+    el('input', { type: 'number', value: state.mengen.faktor, min: 0.5, max: 2, step: 0.05,
+      onchange: (e) => store.set(s => { s.mengen.faktor = parseFloat(e.target.value) || 1.05; }),
+    }),
+  ]));
+  root.appendChild(controls);
+
+  const table = el('table', { class: 'mengen-table' });
+  const thead = el('thead');
+  thead.appendChild(el('tr', {}, [
+    el('th', {}, 'Position'),
+    el('th', { style: { textAlign: 'right' } }, 'pro Person'),
+    el('th', { style: { textAlign: 'right' } }, 'Gesamt'),
+    el('th', {}, 'Hinweis'),
+  ]));
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  let lastSektion = null;
+  for (const p of state.mengen.positionen) {
+    if (p.sektion !== lastSektion) {
+      lastSektion = p.sektion;
+      tbody.appendChild(el('tr', { class: 'section' }, [el('td', { colspan: 4 }, p.sektion || '')]));
+    }
+    const gesamt = p.perPerson !== null && p.perPerson !== undefined
+      ? Math.round(state.mengen.portionen * state.mengen.faktor * p.perPerson * 10) / 10
+      : null;
+    tbody.appendChild(el('tr', {}, [
+      el('td', {}, p.name),
+      el('td', { class: 'per-person' }, p.displayPerPerson || ''),
+      el('td', { class: 'gesamt' }, gesamt !== null ? `${gesamt} ${p.unit}` : '—'),
+      el('td', { class: 'hinweis' }, p.hinweis || ''),
+    ]));
+  }
+  table.appendChild(tbody);
+  root.appendChild(table);
+  if (state.mengen.nieVergessen) {
+    root.appendChild(el('div', { class: 'mengen-nie-vergessen' }, [el('b', {}, 'Nie vergessen: '), state.mengen.nieVergessen.replace(/^Nie vergessen[^:]*:\s*/, '')]));
+  }
+};
+
+// -------- Referenz --------
+VIEWS.referenz = (root, state) => {
+  root.appendChild(el('h2', { class: 'section-title' }, 'Referenz'));
+
+  const block1 = el('div', { class: 'ref-block' });
+  block1.appendChild(el('h3', {}, 'Schicht-Ablauf (Standard-Referenz)'));
+  for (const b of state.schichtAufgabenReferenz) {
+    const det = el('details', { open: true });
+    det.appendChild(el('summary', {}, `${b.label} · ${b.zeitraum}`));
+    const body = el('div', { class: 'ref-body' });
+    const table = el('table');
+    for (const p of b.punkte) {
+      const tr = el('tr');
+      tr.appendChild(el('td', { class: 'wannWas' }, p.wannWas || ''));
+      tr.appendChild(el('td', {}, p.aufgabe || ''));
+      table.appendChild(tr);
+    }
+    body.appendChild(table);
+    det.appendChild(body);
+    block1.appendChild(det);
+  }
+  root.appendChild(block1);
+
+  const block2 = el('div', { class: 'ref-block' });
+  block2.appendChild(el('h3', {}, 'Rollen im Küchenteam'));
+  for (const r of state.rollenLegende) {
+    const box = el('div', { class: 'ref-rolle' });
+    box.appendChild(el('h4', {}, r.rolle));
+    const ul = el('ul');
+    for (const p of r.punkte) ul.appendChild(el('li', {}, p));
+    box.appendChild(ul);
+    block2.appendChild(box);
+  }
+  root.appendChild(block2);
+
+  const block3 = el('div', { class: 'ref-block' });
+  block3.appendChild(el('h3', {}, 'Regeln'));
+  const ul3 = el('ul');
+  for (const r of state.regeln) ul3.appendChild(el('li', {}, r));
+  block3.appendChild(ul3);
+  root.appendChild(block3);
+
+  const block4 = el('div', { class: 'ref-block' });
+  block4.appendChild(el('h3', {}, 'Notrufe & Kontakte'));
+  const dl = el('dl', { class: 'notruf-list' });
+  const e = state.eckdaten;
+  const rows = [
+    ['Notruf', e.notruf || '112'],
+    ['Giftnotruf BW', e.giftnotruf || ''],
+    ['Camptelefon', e.camptelefon || '(einzutragen)'],
+    ['Küchenleitung', e.leitung || ''],
+    ['Stellvertretung', e.stellvertretung || '(einzutragen)'],
+    ['Standort Küche', e.standortKueche || '(einzutragen)'],
+  ];
+  for (const [k, v] of rows) {
+    dl.appendChild(el('dt', {}, k));
+    dl.appendChild(el('dd', {}, v));
+  }
+  block4.appendChild(dl);
+  root.appendChild(block4);
+
+  const block5 = el('div', { class: 'ref-block' });
+  block5.appendChild(el('h3', {}, 'Legende'));
+  const ul5 = el('ul');
+  for (const l of state.legende) ul5.appendChild(el('li', {}, [el('b', {}, l.farbe), ' — ', l.bedeutung]));
+  block5.appendChild(ul5);
+  root.appendChild(block5);
+
+  // Print button
+  const printBtn = el('button', { class: 'tool-btn', onclick: () => window.print(), style: { marginTop: '20px' } }, 'Drucken / Aushang');
+  root.appendChild(printBtn);
+};
+
+// ============================================================
+// Common: Tag-Tabs
+// ============================================================
+function tagTabs(_, getActive, setActive) {
+  const wrap = el('div', { class: 'tag-tabs' });
+  const state = store.state;
+  for (const t of state.tage) {
+    const btn = el('button', {
+      class: getActive() === t.id ? 'active' : '',
+      onclick: () => setActive(t.id),
+    }, [t.label.replace(/(\S+)\s(\d+\.\d+)\./, '$1 $2.'), t.untertitel ? el('small', {}, t.untertitel) : null]);
+    wrap.appendChild(btn);
+  }
+  return wrap;
+}
+
+// ============================================================
+// Person modal
+// ============================================================
+function openPersonModal(personId) {
+  const isEdit = !!personId;
+  const p = isEdit ? store.state.team.find(t => t.id === personId) : { name: '', rollen: [], handy: '', allergie: '' };
+  if (isEdit && !p) return;
+  const ov = el('div', { class: 'overlay', onclick: (e) => { if (e.target === ov) close(); } });
+  const modal = el('div', { class: 'modal' });
+  modal.appendChild(el('h3', {}, isEdit ? 'Person bearbeiten' : 'Neue Person'));
+  const nameI = el('input', { type: 'text', value: p.name, placeholder: 'Name' });
+  const rolleI = el('input', { type: 'text', value: (p.rollen || []).join(', '), placeholder: 'z.B. Köchin, Springer' });
+  const handyI = el('input', { type: 'tel', value: p.handy, placeholder: '0172…' });
+  const allergyI = el('input', { type: 'text', value: p.allergie, placeholder: 'z.B. Laktose' });
+  const rows = [
+    ['Name', nameI],
+    ['Rollen (Komma-getrennt)', rolleI],
+    ['Handy', handyI],
+    ['Allergie / Unverträglichkeit', allergyI],
+  ];
+  for (const [lab, inp] of rows) {
+    modal.appendChild(el('div', { class: 'row' }, [el('label', {}, lab), inp]));
+  }
+  const acts = el('div', { class: 'actions' });
+  if (isEdit) {
+    acts.appendChild(el('button', { class: 'tool-btn danger', onclick: () => {
+      if (confirm(`Person ${p.name} wirklich löschen? Zuteilungen bleiben als IDs erhalten.`)) {
+        store.set(s => { s.team = s.team.filter(t => t.id !== personId); });
+        close();
+      }
+    } }, 'Löschen'));
+  }
+  acts.appendChild(el('button', { class: 'tool-btn', onclick: close }, 'Abbrechen'));
+  acts.appendChild(el('button', { class: 'tool-btn primary', onclick: () => {
+    const name = nameI.value.trim();
+    if (!name) { alert('Name erforderlich'); return; }
+    const rollen = rolleI.value.split(',').map(s => s.trim()).filter(Boolean);
+    store.set(s => {
+      if (isEdit) {
+        const t = s.team.find(x => x.id === personId);
+        t.name = name; t.rollen = rollen; t.handy = handyI.value; t.allergie = allergyI.value;
+      } else {
+        const id = 'p-' + (crypto.randomUUID?.() || Date.now());
+        s.team.push({ id, name, rollen, handy: handyI.value, allergie: allergyI.value, verfuegbarkeit: {} });
+      }
+    });
+    close();
+  } }, 'Speichern'));
+  modal.appendChild(acts);
+  ov.appendChild(modal);
+  document.body.appendChild(ov);
+  nameI.focus();
+  function close() { ov.remove(); }
+}
+
+// ============================================================
+// Menu / Export / Import / Reset
+// ============================================================
+function openMenu() {
+  const s = store.state;
+  const ov = el('div', { class: 'overlay', onclick: (e) => { if (e.target === ov) close(); } });
+  const m = el('div', { class: 'modal' });
+  m.appendChild(el('h3', {}, 'Menü'));
+  m.appendChild(el('p', { class: 'subtle' }, [
+    'Letzte Änderung: ' + fmtDate(s.lastMutationAt), el('br', {}),
+    'Letztes Backup: ' + fmtDate(s.lastExportAt),
+  ]));
+  const acts = el('div', { class: 'actions', style: { flexDirection: 'column', alignItems: 'stretch' } });
+  acts.appendChild(el('button', { class: 'tool-btn primary', onclick: () => { exportJSON(); close(); } }, '📤 Backup exportieren'));
+  acts.appendChild(el('button', { class: 'tool-btn', onclick: () => { close(); openImport(); } }, '📥 Backup importieren'));
+  acts.appendChild(el('button', { class: 'tool-btn danger', onclick: () => { close(); doReset(); } }, '↺ Alles zurücksetzen'));
+  acts.appendChild(el('button', { class: 'tool-btn', onclick: close }, 'Schließen'));
+  m.appendChild(acts);
+  ov.appendChild(m);
+  document.body.appendChild(ov);
+  function close() { ov.remove(); }
+}
+
+async function exportJSON() {
+  const s = store.state;
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const filename = `kuechenplan_${stamp}.json`;
+  const json = JSON.stringify(s, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Küchenplan Backup', text: 'Backup ' + stamp });
+      store.set(st => { st.lastExportAt = Date.now(); }, { silent: true });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.warn('Share fehlgeschlagen, Fallback Download', e);
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  store.set(st => { st.lastExportAt = Date.now(); }, { silent: true });
+}
+
+function openImport() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json,application/json';
+  inp.onchange = async () => {
+    const f = inp.files[0];
+    if (!f) return;
+    try {
+      const txt = await f.text();
+      const data = JSON.parse(txt);
+      if (data.schemaVersion !== SCHEMA_VERSION) {
+        alert(`Falsche Schema-Version (${data.schemaVersion} statt ${SCHEMA_VERSION})`);
+        return;
+      }
+      const required = ['tage', 'schichten', 'team', 'aufgaben', 'allergien', 'speiseplan', 'mengen'];
+      for (const k of required) {
+        if (!(k in data)) { alert(`Feld fehlt: ${k}`); return; }
+      }
+      const preview = [
+        'Zeitstempel: ' + fmtDate(data.lastMutationAt || 0),
+        `${data.team.length} Personen`,
+        `${data.aufgaben.length} Aufgaben`,
+        `${data.aufgaben.filter(a => a.erledigt).length} erledigt`,
+        `${Object.keys(data.dienstplanZuteilungen || {}).length} Schichten mit Zuteilungen`,
+        `${data.allergien.length} Allergien`,
+      ];
+      if (confirm('Import ersetzt den aktuellen Stand komplett!\n\n' + preview.join('\n') + '\n\nFortfahren?')) {
+        store.replace(data);
+        alert('Import erfolgreich.');
+      }
+    } catch (e) {
+      alert('Import fehlgeschlagen: ' + e.message);
+    }
+  };
+  inp.click();
+}
+
+function doReset() {
+  if (!confirm('Wirklich ALLE Änderungen verwerfen und auf Ausgangsdaten zurücksetzen?')) return;
+  if (!confirm('Ganz sicher? Diese Aktion kann nicht rückgängig gemacht werden. Erst Backup exportieren?')) return;
+  store.replace(deepClone(SEED));
+}
+
+// ============================================================
+// Render loop
+// ============================================================
+function render() {
+  const state = store.state;
+  const root = document.getElementById('view-root');
+  root.replaceChildren();
+  const renderer = VIEWS[activeTab] || VIEWS.heute;
+  renderer(root, state);
+  renderHeader();
+}
+
+// ============================================================
+// Init
+// ============================================================
+store.init();
+store.sub(() => render());
+document.querySelectorAll('nav.tabbar button').forEach(b => {
+  b.addEventListener('click', () => goto(b.dataset.tab));
+});
+document.getElementById('menu-btn').addEventListener('click', openMenu);
+goto('heute');
+
+// PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW register failed', e));
+  });
+}
+</script>
+
+<div id="demoRibbon" aria-hidden="true">DEMO · Beispieldaten, keine echten Personen</div>
+<style>
+#demoRibbon{position:fixed;top:0;right:0;z-index:99999;pointer-events:none;
+  font:600 12px/1.4 -apple-system,system-ui,sans-serif;color:#fff;
+  background:#c0392b;padding:4px 10px;border-bottom-left-radius:10px;
+  letter-spacing:.02em;opacity:.92;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+@media print{#demoRibbon{display:none}}
+</style>
+</body>
+</html>

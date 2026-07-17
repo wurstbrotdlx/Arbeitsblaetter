@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quatsch-Werkstatt · Blöcke-Coding · Merian GMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10; --panel:#161619; --panel2:#1d1d22; --line:#2a2a31;
+    --blau:#00b4f0; --text:#f1f1f5; --dim:#9a9aa6;
+    --gruen:#3ddc84; --pink:#ff5ca8; --amber:#ffb020; --orange:#ff7a3c; --lila:#b48bff;
+    --font-body:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --font-disp:"Space Grotesk","DM Sans",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden;}
+  body{display:flex;flex-direction:column;}
+
+  header{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .logo{font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.3px;display:flex;align-items:center;gap:9px;}
+  .logo .dot{width:11px;height:11px;border-radius:3px;background:var(--blau);box-shadow:0 0 14px var(--blau);}
+  .logo small{font-weight:400;font-family:var(--font-body);color:var(--dim);font-size:12px;letter-spacing:0;}
+  .toolbar{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
+  button.tb{font-family:var(--font-body);font-weight:500;font-size:14px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px 13px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.12s;}
+  button.tb:hover{border-color:#3a3a44;background:#25252b;}
+  button.tb:active{transform:translateY(1px);}
+  button.tb.play{background:var(--gruen);border-color:var(--gruen);color:#062;font-weight:700;}
+  button.tb.play:hover{filter:brightness(1.08);}
+  button.tb.stop{background:#ff4d5e;border-color:#ff4d5e;color:#3a0007;font-weight:700;}
+  button.tb.ghost{background:transparent;}
+
+  .stage-bar{display:flex;align-items:center;gap:10px;padding:0;}
+  main{flex:1;display:grid;grid-template-columns:210px 1fr 340px;min-height:0;}
+  .col{min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+  .col-head{padding:9px 13px;font-family:var(--font-disp);font-weight:700;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;gap:8px;}
+
+  /* ---- Palette ---- */
+  .palette{background:var(--panel);border-right:1px solid var(--line);}
+  .palette .scroll{overflow-y:auto;padding:10px;flex:1;}
+  .cat-title{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);margin:12px 4px 6px;}
+  .cat-title:first-child{margin-top:2px;}
+  .pblock{font-weight:500;font-size:13.5px;color:#111;border-radius:8px;padding:9px 11px;margin-bottom:7px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;line-height:1.25;transition:transform .08s,filter .1s;box-shadow:0 1px 0 rgba(0,0,0,.35);}
+  .pblock:hover{filter:brightness(1.07);}
+  .pblock:active{transform:scale(.97);}
+  .pblock .ic{font-size:15px;}
+
+  /* ---- Skript ---- */
+  .script{background:var(--bg);}
+  .script .scroll{overflow-y:auto;flex:1;padding:16px;}
+  .insert-hint{font-size:12.5px;color:var(--dim);background:var(--panel);border:1px dashed var(--line);border-radius:9px;padding:8px 11px;margin-bottom:12px;line-height:1.4;}
+  .insert-hint b{color:var(--blau);}
+  #scriptRoot{min-height:120px;}
+  .hatblock{background:linear-gradient(180deg,#3ddc84,#31c274);color:#052914;font-weight:700;border-radius:10px;padding:11px 14px;font-size:14.5px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+  .block{border-radius:9px;padding:8px 9px 8px 11px;margin-top:6px;color:#111;font-weight:500;font-size:13.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;box-shadow:0 2px 5px rgba(0,0,0,.35);position:relative;}
+  .block .lbl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .block .ic{font-size:15px;}
+  .block input,.block select{font-family:var(--font-body);font-weight:600;font-size:13px;border:none;border-radius:6px;padding:4px 7px;background:rgba(255,255,255,.82);color:#111;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+  .block input.txt{min-width:88px;}
+  .block input.num{width:52px;text-align:center;}
+  .block select{padding-right:4px;}
+  .block .ctrls{margin-left:auto;display:flex;gap:3px;align-items:center;}
+  .iconbtn{width:26px;height:26px;border:none;border-radius:7px;background:rgba(0,0,0,.16);color:#111;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;}
+  .iconbtn:hover{background:rgba(0,0,0,.28);}
+  .iconbtn:disabled{opacity:.3;cursor:default;}
+  .cblock{border-radius:11px;padding:8px 9px;margin-top:6px;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+  .cblock .chead{color:#111;font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .cbody{margin:8px 0 3px;padding:8px 8px 10px 12px;border-left:4px solid rgba(0,0,0,.28);border-radius:0 8px 8px 0;background:rgba(0,0,0,.14);min-height:34px;}
+  .cbody.active{outline:2px dashed rgba(255,255,255,.6);outline-offset:2px;}
+  .cbody-empty{font-size:12px;color:rgba(0,0,0,.5);font-weight:600;padding:3px 2px;}
+  .running{animation:pulse .7s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.0),0 2px 5px rgba(0,0,0,.35);}50%{box-shadow:0 0 0 3px rgba(255,255,255,.55),0 2px 5px rgba(0,0,0,.35);}}
+
+  /* Kategorie-Farben */
+  .c-aktion{background:linear-gradient(180deg,#00c4ff,#00a6e0);}
+  .c-effekt{background:linear-gradient(180deg,#ff6fb3,#ff4f9f);}
+  .c-sound{background:linear-gradient(180deg,#ffc03a,#ffab00);}
+  .c-ablauf{background:linear-gradient(180deg,#ff8a4d,#ff6a26);}
+  .c-var{background:linear-gradient(180deg,#c39cff,#a97bff);}
+
+  .emptyscript{color:var(--dim);font-size:13.5px;text-align:center;padding:26px 10px;line-height:1.5;}
+
+  /* ---- Bühne ---- */
+  .stage{background:var(--panel);border-left:1px solid var(--line);}
+  .stagewrap{flex:1;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden;}
+  .stagebox{flex:1;border-radius:14px;position:relative;overflow:hidden;background:
+     radial-gradient(120% 90% at 50% 0%, #1c2733 0%, #12141a 55%, #0c0d11 100%);
+     border:1px solid var(--line);min-height:220px;}
+  .ground{position:absolute;left:0;right:0;bottom:0;height:34%;
+     background:linear-gradient(180deg,rgba(0,180,240,.05),rgba(0,180,240,.14));
+     border-top:1px solid rgba(0,180,240,.25);}
+  .actor{position:absolute;left:50%;bottom:34%;transform:translate(-50%,0);font-size:76px;line-height:1;
+     transition:transform .35s cubic-bezier(.34,1.56,.64,1),filter .3s;filter:none;cursor:pointer;user-select:none;
+     text-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .speech{position:absolute;max-width:200px;background:#fff;color:#111;font-weight:600;font-size:14px;
+     padding:9px 13px;border-radius:14px;left:50%;transform:translateX(-50%);bottom:calc(34% + 92px);
+     box-shadow:0 6px 20px rgba(0,0,0,.5);opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;text-align:center;}
+  .speech.think{border-radius:20px;font-style:italic;background:#eef;}
+  .speech.show{opacity:1;}
+  .speech::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
+     border:9px solid transparent;border-top-color:#fff;border-bottom:0;}
+  .speech.think::after{border-top-color:#eef;}
+  .varchip{position:absolute;top:10px;left:10px;background:rgba(180,139,255,.16);border:1px solid rgba(180,139,255,.5);
+     color:#d9c7ff;font-weight:700;font-size:13px;padding:5px 11px;border-radius:20px;display:flex;align-items:center;gap:6px;}
+  .actorpick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+  .actorpick button{font-size:20px;width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;transition:.1s;}
+  .actorpick button.sel{border-color:var(--blau);box-shadow:0 0 0 2px rgba(0,180,240,.35);}
+  .actorpick button:active{transform:scale(.9);}
+
+  @keyframes hop{0%,100%{bottom:34%;}40%{bottom:calc(34% + 70px);}70%{bottom:34%;}}
+  @keyframes wobble{0%,100%{transform:translate(-50%,0) rotate(0);}25%{transform:translate(-50%,0) rotate(-13deg);}75%{transform:translate(-50%,0) rotate(13deg);}}
+  @keyframes spin360{from{transform:translate(-50%,0) rotate(0);}to{transform:translate(-50%,0) rotate(360deg);}}
+  .conf{position:absolute;width:11px;height:11px;top:-14px;border-radius:2px;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(120vh) rotate(540deg);opacity:.2;}}
+
+  /* Mission-Panel */
+  .missionbar{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;}
+  .missionbar .top{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+  .missionbar .top .lvl{background:var(--blau);color:#042;padding:2px 8px;border-radius:20px;font-size:11px;}
+  .missionbar h3{margin:7px 0 4px;font-family:var(--font-disp);font-size:15.5px;}
+  .missionbar p{margin:0;font-size:13px;color:#cfcfd8;line-height:1.45;}
+  .missionbar .concept{margin-top:8px;font-size:12.5px;color:var(--amber);background:rgba(255,176,32,.09);border:1px solid rgba(255,176,32,.28);border-radius:8px;padding:7px 9px;line-height:1.4;}
+  .missionbar .mrow{display:flex;gap:8px;margin-top:10px;}
+  .missionbar .mrow button{flex:1;font-size:13px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;font-weight:600;}
+  .missionbar .mrow button.chk{background:var(--blau);border-color:var(--blau);color:#042;font-weight:700;}
+  .mfeedback{margin-top:9px;font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px;display:none;}
+  .mfeedback.ok{display:block;background:rgba(61,220,132,.13);border:1px solid rgba(61,220,132,.4);color:var(--gruen);}
+  .mfeedback.no{display:block;background:rgba(255,122,60,.12);border:1px solid rgba(255,122,60,.4);color:#ffb089;}
+
+  /* Overlay / Willkommen + Hilfe */
+  .overlay{position:fixed;inset:0;background:rgba(6,6,9,.82);backdrop-filter:blur(4px);z-index:50;display:none;align-items:center;justify-content:center;padding:20px;}
+  .overlay.show{display:flex;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;max-width:560px;width:100%;padding:26px 28px;box-shadow:0 30px 80px rgba(0,0,0,.6);max-height:88vh;overflow-y:auto;}
+  .card h2{font-family:var(--font-disp);font-size:24px;margin:0 0 6px;display:flex;align-items:center;gap:10px;}
+  .card .sub{color:var(--dim);font-size:14px;margin-bottom:18px;}
+  .card ol{margin:0 0 6px;padding-left:20px;}
+  .card li{margin-bottom:10px;font-size:14.5px;line-height:1.5;}
+  .card li b{color:var(--blau);}
+  .card .steps{display:grid;gap:11px;margin:6px 0 18px;}
+  .card .step{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;}
+  .card .step .n{flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--blau);color:#042;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--font-disp);}
+  .card .step div b{font-size:14.5px;}
+  .card .step div p{margin:2px 0 0;font-size:13px;color:#cfcfd8;line-height:1.4;}
+  .card .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap;}
+  .btn-primary{background:var(--blau);color:#042;font-weight:700;border:none;padding:11px 20px;border-radius:10px;cursor:pointer;font-size:15px;font-family:var(--font-body);}
+  .btn-secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:11px 18px;border-radius:10px;cursor:pointer;font-size:15px;font-family:var(--font-body);}
+  .kbd{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12.5px;font-family:var(--font-disp);}
+
+  /* Tabs (iPad / schmal) */
+  .tabbar{display:none;background:var(--panel);border-bottom:1px solid var(--line);}
+  .tabbar button{flex:1;padding:11px;background:none;border:none;color:var(--dim);font-weight:700;font-size:13.5px;font-family:var(--font-body);border-bottom:2px solid transparent;cursor:pointer;}
+  .tabbar button.act{color:var(--blau);border-bottom-color:var(--blau);}
+
+  @media (max-width:900px){
+    main{grid-template-columns:1fr;}
+    .tabbar{display:flex;}
+    .col{display:none;}
+    .col.act{display:flex;}
+    header .logo small{display:none;}
+    .actor{font-size:64px;}
+  }
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:11px 18px;border-radius:11px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,.5);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="dot"></span>Quatsch-Werkstatt <small>· Blöcke-Coding · Merian GMS</small></div>
+  <div class="toolbar">
+    <button class="tb" id="btnHelp">❓ Hilfe</button>
+    <button class="tb ghost" id="btnSound">🔊 Ton</button>
+    <button class="tb ghost" id="btnClear">🗑️ Leeren</button>
+    <button class="tb stop" id="btnStop" style="display:none">⏹ Stopp</button>
+    <button class="tb play" id="btnRun">▶ Start</button>
+  </div>
+</header>
+
+<div class="tabbar">
+  <button data-tab="pal" class="act">🧩 Blöcke</button>
+  <button data-tab="scr">📜 Skript</button>
+  <button data-tab="stg">🎬 Bühne</button>
+</div>
+
+<main>
+  <!-- Palette -->
+  <section class="col palette act" data-col="pal">
+    <div class="col-head">🧩 Blöcke</div>
+    <div class="scroll" id="palette"></div>
+  </section>
+
+  <!-- Skript -->
+  <section class="col script" data-col="scr">
+    <div class="col-head">📜 Dein Skript</div>
+    <div class="scroll">
+      <div class="insert-hint" id="insertHint"></div>
+      <div class="hatblock">🚩 Wenn <b style="color:#052914">Start</b> gedrückt wird</div>
+      <div id="scriptRoot"></div>
+    </div>
+  </section>
+
+  <!-- Bühne -->
+  <section class="col stage" data-col="stg">
+    <div class="col-head">🎬 Bühne</div>
+    <div class="stagewrap">
+      <div class="stagebox" id="stagebox">
+        <div class="varchip" id="varChip" style="display:none">🏆 Punkte: <span id="varVal">0</span></div>
+        <div class="ground"></div>
+        <div class="speech" id="speech"></div>
+        <div class="actor" id="actor" title="Tipp mich an, um mein Aussehen zu ändern">🦆</div>
+      </div>
+      <div class="actorpick" id="actorpick"></div>
+      <div class="missionbar" id="missionbar"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Willkommen / Hilfe Overlay -->
+<div class="overlay" id="overlay">
+  <div class="card" id="card"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Quatsch-Werkstatt — ein kleines Block-Coding-System.
+   Selbstlaufend, keine externen Skripte. Merian GMS.
+   ============================================================ */
+
+/* ---------- Zustand ---------- */
+const state = {
+  tree: [],                 // Skript-Baum (Array von Block-Knoten)
+  vars: { punkte: 0 },
+  actor: "🦆",
+  sound: true,
+  activeParent: null,       // aktueller C-Block-Body (Einfügeziel) oder null = Hauptebene
+  running: false,
+  runToken: 0,              // wird bei Stop/Neu-Start erhöht -> laufender Interpreter bricht ab
+  mission: 0,               // Index der aktuellen Mission
+  usedBlockTypes: new Set(),// Block-Typen, die beim letzten Lauf ausgeführt wurden
+  ranOnce: false,
+};
+
+let uid = 1;
+const nid = () => "b" + (uid++);
+
+/* ---------- Block-Katalog ---------- */
+// cat: aktion|effekt|sound|ablauf|var  ·  c:true => C-Block mit Body
+const CATALOG = {
+  aktion: [
+    { type:"say",  ic:"💬", label:"sag", params:[{k:"text",kind:"txt",def:"Hallo!"}] },
+    { type:"think",ic:"💭", label:"denk", params:[{k:"text",kind:"txt",def:"Hmm ..."}] },
+  ],
+  effekt: [
+    { type:"hop",   ic:"⬆️", label:"hüpfen" },
+    { type:"wobble",ic:"↔️", label:"wackeln" },
+    { type:"spin",  ic:"🔄", label:"einmal drehen" },
+    { type:"grow",  ic:"🔎", label:"größer werden" },
+    { type:"shrink",ic:"🔬", label:"kleiner werden" },
+    { type:"color", ic:"🎨", label:"Farbe", params:[{k:"col",kind:"sel",opts:["knallbunt","rot","grün","blau","normal"],def:"knallbunt"}] },
+    { type:"confetti",ic:"🎉",label:"Konfetti!" },
+  ],
+  sound: [
+    { type:"snd", ic:"🔈", label:"Geräusch", params:[{k:"s",kind:"sel",opts:["Boing","Piep","Furz","Tada"],def:"Boing"}] },
+  ],
+  ablauf: [
+    { type:"wait", ic:"⏳", label:"warte", params:[{k:"sek",kind:"num",def:1}], suffix:"Sek." },
+    { type:"repeat", ic:"🔁", label:"wiederhole", params:[{k:"n",kind:"num",def:5}], suffix:"mal", c:true },
+    { type:"if", ic:"❓", label:"wenn", params:[{k:"cond",kind:"sel",opts:["Punkte > 3","Punkte < 3","Münzwurf = Kopf"],def:"Punkte > 3"}], c:true },
+  ],
+  var: [
+    { type:"setvar", ic:"🏆", label:"setze Punkte auf", params:[{k:"v",kind:"num",def:0}] },
+    { type:"changevar", ic:"➕", label:"ändere Punkte um", params:[{k:"v",kind:"num",def:1}] },
+  ],
+};
+const CAT_NAMES = { aktion:"Reden", effekt:"Bewegung & Effekte", sound:"Geräusche", ablauf:"Ablauf & Logik", var:"Speicher (Variable)" };
+const CAT_CLASS = { aktion:"c-aktion", effekt:"c-effekt", sound:"c-sound", ablauf:"c-ablauf", var:"c-var" };
+
+function findDef(type){
+  for(const cat in CATALOG){ const d = CATALOG[cat].find(b=>b.type===type); if(d) return {...d, cat}; }
+  return null;
+}
+
+/* ---------- Palette rendern ---------- */
+function renderPalette(){
+  const p = document.getElementById("palette");
+  p.innerHTML = "";
+  for(const cat in CATALOG){
+    const t = document.createElement("div"); t.className="cat-title"; t.textContent=CAT_NAMES[cat]; p.appendChild(t);
+    CATALOG[cat].forEach(def=>{
+      const el = document.createElement("div");
+      el.className = "pblock " + CAT_CLASS[cat];
+      const suffix = def.suffix ? " …" : "";
+      const paramHint = def.params ? (def.type==="wait"?" 1 Sek.":def.type==="repeat"?" 5 mal":def.type==="if"?" …":def.type==="say"||def.type==="think"?" …":def.type==="color"?"":def.type==="snd"?"":def.type==="setvar"?" 0":def.type==="changevar"?" 1":"") : "";
+      el.innerHTML = `<span class="ic">${def.ic}</span><span>${def.label}${paramHint}${def.c?" { }":""}</span>`;
+      el.onclick = ()=> addBlock(def.type);
+      p.appendChild(el);
+    });
+  }
+}
+
+/* ---------- Block hinzufügen ---------- */
+function addBlock(type){
+  const def = findDef(type);
+  const node = { id:nid(), type, params:{} };
+  if(def.params) def.params.forEach(pp=> node.params[pp.k] = pp.def);
+  if(def.c) node.children = [];
+  const target = state.activeParent ? state.activeParent.children : state.tree;
+  target.push(node);
+  renderScript(); saveLocal(); flashToast(`${def.label} angebaut`);
+}
+
+/* ---------- Skript rendern ---------- */
+function renderScript(){
+  const root = document.getElementById("scriptRoot");
+  root.innerHTML = "";
+  if(state.tree.length===0){
+    root.innerHTML = `<div class="emptyscript">Noch keine Blöcke.<br>Tippe links auf einen Block, um ihn anzubauen. 🧩</div>`;
+  } else {
+    renderList(state.tree, root);
+  }
+  updateInsertHint();
+}
+
+function renderList(list, container){
+  list.forEach((node, idx)=>{
+    const def = findDef(node.type);
+    if(def.c){
+      const wrap = document.createElement("div");
+      wrap.className = "cblock " + CAT_CLASS[def.cat];
+      wrap.dataset.id = node.id;
+      const head = document.createElement("div"); head.className="chead";
+      head.appendChild(spanIcLabel(def, node));
+      head.appendChild(makeCtrls(node, list, idx));
+      wrap.appendChild(head);
+      const body = document.createElement("div");
+      body.className = "cbody" + (state.activeParent===node ? " active":"");
+      body.onclick = (e)=>{ if(e.target===body || e.target.classList.contains("cbody-empty")){ setActiveParent(node); } };
+      if(node.children.length===0){
+        const em = document.createElement("div"); em.className="cbody-empty";
+        em.textContent = "hier hinein bauen — tipp mich an, dann hier einfügen";
+        body.appendChild(em);
+      } else {
+        renderList(node.children, body);
+      }
+      wrap.appendChild(body);
+      container.appendChild(wrap);
+    } else {
+      const b = document.createElement("div");
+      b.className = "block " + CAT_CLASS[def.cat];
+      b.dataset.id = node.id;
+      b.appendChild(spanIcLabel(def, node));
+      b.appendChild(makeCtrls(node, list, idx));
+      container.appendChild(b);
+    }
+  });
+}
+
+function spanIcLabel(def, node){
+  const s = document.createElement("span"); s.className="lbl";
+  s.innerHTML = `<span class="ic">${def.ic}</span><span>${def.label}</span>`;
+  if(def.params){
+    def.params.forEach(pp=>{
+      let inp;
+      if(pp.kind==="txt"){ inp=document.createElement("input"); inp.className="txt"; inp.type="text"; inp.value=node.params[pp.k]; }
+      else if(pp.kind==="num"){ inp=document.createElement("input"); inp.className="num"; inp.type="number"; inp.value=node.params[pp.k]; }
+      else if(pp.kind==="sel"){ inp=document.createElement("select"); pp.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o;if(o===node.params[pp.k])op.selected=true;inp.appendChild(op);}); }
+      inp.onchange = inp.oninput = ()=>{ node.params[pp.k] = (pp.kind==="num")? (parseFloat(inp.value)||0) : inp.value; saveLocal(); };
+      inp.onclick = e=>e.stopPropagation();
+      s.appendChild(inp);
+    });
+  }
+  if(def.suffix){ const sf=document.createElement("span"); sf.textContent=def.suffix; s.appendChild(sf); }
+  return s;
+}
+
+function makeCtrls(node, list, idx){
+  const c = document.createElement("div"); c.className="ctrls";
+  const up = iconBtn("↑", ()=>move(list,idx,-1)); up.disabled = idx===0;
+  const dn = iconBtn("↓", ()=>move(list,idx,1)); dn.disabled = idx===list.length-1;
+  const del = iconBtn("✕", ()=>del(list,idx,node));
+  c.append(up,dn,del);
+  return c;
+}
+function iconBtn(txt, fn){ const b=document.createElement("button"); b.className="iconbtn"; b.textContent=txt; b.onclick=(e)=>{e.stopPropagation();fn();}; return b; }
+function move(list,idx,dir){ const j=idx+dir; if(j<0||j>=list.length)return; [list[idx],list[j]]=[list[j],list[idx]]; renderScript(); saveLocal(); }
+function del(list,idx,node){ if(state.activeParent===node) state.activeParent=null; list.splice(idx,1); renderScript(); saveLocal(); }
+
+function setActiveParent(node){
+  state.activeParent = (state.activeParent===node)? null : node;
+  renderScript();
+}
+function updateInsertHint(){
+  const h = document.getElementById("insertHint");
+  if(state.activeParent){
+    const def = findDef(state.activeParent.type);
+    h.innerHTML = `Neue Blöcke landen gerade <b>in der ${def.label}-Schleife</b>. Tipp auf den Rahmen, um wieder ganz nach außen zu bauen.`;
+  } else {
+    h.innerHTML = `Neue Blöcke landen gerade <b>im Hauptskript</b>. Bei ${"{ }"}-Blöcken den Innenbereich antippen, um hinein zu bauen.`;
+  }
+}
+
+/* ---------- Bühne / Figur ---------- */
+const actor = ()=>document.getElementById("actor");
+let scale = 1, animTimer=null;
+function resetActor(){ scale=1; actor().style.transform="translate(-50%,0)"; actor().style.filter="none"; actor().className="actor"; }
+
+function playAnim(name, ms){
+  return new Promise(res=>{
+    const a = actor();
+    a.style.animation = "none"; void a.offsetWidth;
+    a.style.animation = `${name} ${ms}ms ease`;
+    setTimeout(()=>{ a.style.animation=""; if(name==="spin360"||name==="wobble") a.style.transform="translate(-50%,0) scale("+scale+")"; res(); }, ms);
+  });
+}
+function applyScale(){ actor().style.transform = `translate(-50%,0) scale(${scale})`; }
+function setColor(v){
+  const map = { "knallbunt":"hue-rotate("+Math.floor(Math.random()*360)+"deg) saturate(1.6)", "rot":"sepia(1) saturate(6) hue-rotate(-30deg)", "grün":"sepia(1) saturate(5) hue-rotate(60deg)", "blau":"sepia(1) saturate(6) hue-rotate(160deg)", "normal":"none" };
+  actor().style.filter = map[v]||"none";
+}
+function showSpeech(text, think){
+  const sp = document.getElementById("speech");
+  sp.className = "speech" + (think?" think":"") + " show";
+  sp.textContent = text;
+}
+function hideSpeech(){ document.getElementById("speech").classList.remove("show"); }
+function interpolate(t){ return String(t).replace(/\{\s*[Pp]unkte\s*\}/g, state.vars.punkte); }
+
+function confetti(){
+  const box = document.getElementById("stagebox");
+  const cols = ["#00b4f0","#ff5ca8","#ffb020","#3ddc84","#b48bff","#ff7a3c"];
+  for(let i=0;i<40;i++){
+    const c=document.createElement("div"); c.className="conf";
+    c.style.left=Math.random()*100+"%";
+    c.style.background=cols[i%cols.length];
+    c.style.animation=`fall ${900+Math.random()*900}ms linear forwards`;
+    c.style.animationDelay=(Math.random()*300)+"ms";
+    box.appendChild(c);
+    setTimeout(()=>c.remove(),2200);
+  }
+}
+function updateVarChip(){
+  document.getElementById("varVal").textContent = state.vars.punkte;
+  document.getElementById("varChip").style.display = state.varSeen ? "flex":"none";
+}
+
+/* ---------- Sound (Web Audio, generiert) ---------- */
+let actx=null;
+function ensureAudio(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==="suspended") actx.resume(); }
+function beep(freq, dur, type, glideTo){
+  if(!state.sound || !actx) return;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type||"sine"; o.frequency.value=freq;
+  if(glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, actx.currentTime+dur/1000);
+  g.gain.value=0.0001; g.gain.exponentialRampToValueAtTime(0.25, actx.currentTime+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur/1000);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+dur/1000+0.02);
+}
+function playSound(name){
+  if(!state.sound) return Promise.resolve();
+  ensureAudio();
+  if(name==="Boing"){ beep(520,320,"sine",120); }
+  else if(name==="Piep"){ beep(1400,110,"square"); }
+  else if(name==="Furz"){ beep(90,420,"sawtooth",55); setTimeout(()=>beep(70,260,"sawtooth",45),120); }
+  else if(name==="Tada"){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,220,"triangle"),i*90)); }
+  return sleep(name==="Tada"?520:name==="Furz"?400:260);
+}
+
+/* ---------- Interpreter ---------- */
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+function alive(token){ return state.running && token===state.runToken; }
+
+async function runProgram(){
+  if(state.running) return;
+  ensureAudio();
+  state.running = true;
+  const token = ++state.runToken;
+  state.vars.punkte = 0; state.varSeen=false;
+  state.usedBlockTypes = new Set();
+  resetActor(); hideSpeech(); updateVarChip();
+  document.getElementById("btnRun").style.display="none";
+  document.getElementById("btnStop").style.display="flex";
+  document.getElementById("actor").classList.add("running");
+
+  try{ await runList(state.tree, token); }catch(e){ console.warn(e); }
+
+  finishRun();
+}
+function finishRun(){
+  state.running=false; state.ranOnce=true;
+  document.getElementById("btnRun").style.display="flex";
+  document.getElementById("btnStop").style.display="none";
+  document.getElementById("actor").classList.remove("running");
+  clearRunningMarks();
+}
+function stopProgram(){ state.runToken++; finishRun(); hideSpeech(); }
+
+function clearRunningMarks(){ document.querySelectorAll(".block.running,.cblock.running").forEach(e=>e.classList.remove("running")); }
+function markRunning(id){
+  clearRunningMarks();
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if(el) el.classList.add("running");
+}
+
+async function runList(list, token){
+  for(const node of list){
+    if(!alive(token)) return;
+    await runNode(node, token);
+  }
+}
+
+async function runNode(node, token){
+  if(!alive(token)) return;
+  markRunning(node.id);
+  state.usedBlockTypes.add(node.type);
+  const p = node.params||{};
+  switch(node.type){
+    case "say":   showSpeech(interpolate(p.text),false); await sleep(950); hideSpeech(); await sleep(120); break;
+    case "think": showSpeech(interpolate(p.text),true);  await sleep(950); hideSpeech(); await sleep(120); break;
+    case "hop":    await playAnim("hop",600); break;
+    case "wobble": await playAnim("wobble",600); break;
+    case "spin":   await playAnim("spin360",700); break;
+    case "grow":   scale=Math.min(scale*1.25,3); applyScale(); await sleep(380); break;
+    case "shrink": scale=Math.max(scale*0.8,0.3); applyScale(); await sleep(380); break;
+    case "color":  setColor(p.col); await sleep(320); break;
+    case "confetti": confetti(); await sleep(500); break;
+    case "snd":    await playSound(p.s); break;
+    case "wait":   await sleep(Math.max(0,(parseFloat(p.sek)||0)*1000)); break;
+    case "setvar": state.vars.punkte = parseInt(p.v)||0; state.varSeen=true; updateVarChip(); await sleep(200); break;
+    case "changevar": state.vars.punkte += parseInt(p.v)||0; state.varSeen=true; updateVarChip(); await sleep(200); break;
+    case "repeat":{
+      const n = Math.max(0, parseInt(p.n)||0);
+      for(let i=0;i<n;i++){ if(!alive(token))return; await runList(node.children, token); markRunning(node.id); }
+      break;
+    }
+    case "if":{
+      if(evalCond(p.cond)) await runList(node.children, token);
+      break;
+    }
+  }
+}
+function evalCond(c){
+  if(c==="Punkte > 3") return state.vars.punkte>3;
+  if(c==="Punkte < 3") return state.vars.punkte<3;
+  if(c==="Münzwurf = Kopf") return Math.random()<0.5;
+  return false;
+}
+
+/* ---------- Figur-Auswahl ---------- */
+const ACTORS = ["🦆","🐸","🦄","🐙","🤖","🐌","🍕","👾","🐷","💩"];
+function renderActorPick(){
+  const wrap = document.getElementById("actorpick"); wrap.innerHTML="";
+  ACTORS.forEach(e=>{
+    const b=document.createElement("button"); b.textContent=e; if(e===state.actor)b.classList.add("sel");
+    b.onclick=()=>{ state.actor=e; actor().textContent=e; renderActorPick(); saveLocal(); };
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- Missionen (das Tutorial) ---------- */
+const MISSIONS = [
+  { title:"Der erste Block",
+    concept:"Programmieren heißt: dem Computer eine Reihe von Befehlen geben. Jeder Block ist ein Befehl.",
+    task:"Bau einen sag-Block an und drück oben auf ▶ Start. Deine Figur soll etwas sagen.",
+    check:()=> state.usedBlockTypes.has("say")||state.usedBlockTypes.has("think") },
+  { title:"Reihenfolge ist alles",
+    concept:"Ein Programm läuft von oben nach unten ab. Die Reihenfolge der Blöcke bestimmt, was zuerst passiert.",
+    task:"Lass die Figur erst etwas sagen und danach hüpfen. Zwei Blöcke, richtige Reihenfolge.",
+    check:()=> (state.usedBlockTypes.has("say")||state.usedBlockTypes.has("think")) && state.usedBlockTypes.has("hop") },
+  { title:"Zeit steuern",
+    concept:"Ohne Pause passiert alles blitzschnell. Mit einem warte-Block bestimmst du das Timing.",
+    task:"Baue zwischen zwei Aktionen einen warte-Block ein, damit man beide gut sieht.",
+    check:()=> state.usedBlockTypes.has("wait") && state.tree.length>=2 },
+  { title:"Nicht wiederholen — wiederholen lassen",
+    concept:"Statt denselben Block 5-mal hinzuschreiben, packst du ihn EINMAL in eine Wiederhole-Schleife. Das ist der Trick jedes Programmierers: Arbeit an den Computer abgeben.",
+    task:"Lass die Figur mit einer wiederhole-Schleife mehrfach hüpfen (oder wackeln). Der Effekt-Block muss IN der Schleife stecken.",
+    check:()=> hasLoopWithChild() },
+  { title:"Der Computer merkt sich etwas",
+    concept:"Eine Variable ist ein Merkzettel. Hier heißt sie Punkte. Du kannst sie setzen, verändern und in einem Text ausgeben.",
+    task:"Setze Punkte, erhöhe sie in einer Schleife mit „ändere Punkte um 1“, und lass die Figur am Ende „Ich habe {Punkte} Punkte!“ sagen.",
+    check:()=> (state.usedBlockTypes.has("setvar")||state.usedBlockTypes.has("changevar")) && sayHasVar() },
+  { title:"Der Computer entscheidet",
+    concept:"Mit einem wenn-Block trifft dein Programm eine Entscheidung: Nur WENN etwas stimmt, passiert der Inhalt.",
+    task:"Sammle mit einer Schleife Punkte und baue einen wenn-Block: wenn Punkte > 3, soll die Figur Konfetti machen oder jubeln.",
+    check:()=> hasIfWithChild() && (state.usedBlockTypes.has("setvar")||state.usedBlockTypes.has("changevar")) },
+  { title:"Freie Werkstatt 🎉",
+    concept:"Du kennst jetzt alle Grundbausteine: Reihenfolge, warten, wiederholen, merken, entscheiden. Mehr braucht kein Programm der Welt.",
+    task:"Kein Ziel mehr. Bau den größten, quatschigsten Ablauf, den du dir vorstellen kannst — und zeig ihn her.",
+    check:()=> true, free:true },
+];
+function hasLoopWithChild(){ return anyNode(n=> n.type==="repeat" && n.children && n.children.length>0); }
+function hasIfWithChild(){ return anyNode(n=> n.type==="if" && n.children && n.children.length>0); }
+function sayHasVar(){ return anyNode(n=> (n.type==="say"||n.type==="think") && /\{\s*[Pp]unkte\s*\}/.test(n.params.text||"")); }
+function anyNode(fn, list){ list=list||state.tree; for(const n of list){ if(fn(n))return true; if(n.children&&anyNode(fn,n.children))return true; } return false; }
+
+function renderMission(){
+  const m = MISSIONS[state.mission];
+  const bar = document.getElementById("missionbar");
+  bar.innerHTML = `
+    <div class="top"><span class="lvl">Level ${state.mission+1}/${MISSIONS.length}</span> Auftrag</div>
+    <h3>${m.title}</h3>
+    <p>${m.task}</p>
+    <div class="concept">💡 ${m.concept}</div>
+    <div class="mfeedback" id="mfb"></div>
+    <div class="mrow">
+      ${state.mission>0?'<button id="mPrev">◀ zurück</button>':''}
+      ${m.free?'':'<button class="chk" id="mCheck">✓ Auftrag prüfen</button>'}
+      ${m.free||state.mission>=MISSIONS.length-1?'':'<button id="mSkip">überspringen ▶</button>'}
+    </div>`;
+  const prev=document.getElementById("mPrev"); if(prev) prev.onclick=()=>{ state.mission--; renderMission(); saveLocal(); };
+  const chk=document.getElementById("mCheck"); if(chk) chk.onclick=checkMission;
+  const skip=document.getElementById("mSkip"); if(skip) skip.onclick=()=>{ state.mission=Math.min(state.mission+1,MISSIONS.length-1); renderMission(); saveLocal(); };
+}
+function checkMission(){
+  const m = MISSIONS[state.mission];
+  const fb = document.getElementById("mfb");
+  if(!state.ranOnce){ fb.className="mfeedback no"; fb.textContent="Drück zuerst ▶ Start, damit ich sehe, was dein Programm tut."; return; }
+  if(m.check()){
+    fb.className="mfeedback ok";
+    if(state.mission>=MISSIONS.length-1){ fb.textContent="🏆 Alle Level geschafft! Du hast die Grundlagen drauf. Weiter quatschen!"; }
+    else {
+      fb.textContent="✅ Geschafft! Weiter zum nächsten Level.";
+      setTimeout(()=>{ state.mission++; renderMission(); saveLocal(); }, 1100);
+    }
+    confetti(); playSound("Tada");
+  } else {
+    fb.className="mfeedback no";
+    fb.textContent="Noch nicht ganz. Lies den Auftrag nochmal, baue um und drück wieder ▶ Start.";
+  }
+  saveLocal();
+}
+
+/* ---------- Persistenz ---------- */
+const LSKEY="merian_quatsch_v1";
+function saveLocal(){
+  try{ localStorage.setItem(LSKEY, JSON.stringify({tree:state.tree,actor:state.actor,mission:state.mission,sound:state.sound,uid})); }catch(e){}
+}
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LSKEY); if(!raw) return false;
+    const d=JSON.parse(raw);
+    state.tree=d.tree||[]; state.actor=d.actor||"🦆"; state.mission=d.mission||0;
+    state.sound=(d.sound!==false); uid=d.uid||1;
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- Overlay-Inhalte ---------- */
+function welcomeHTML(){
+  return `
+   <h2>🧩 Quatsch-Werkstatt</h2>
+   <div class="sub">Bau ein Programm aus Blöcken — Schritt für Schritt und ohne eine Zeile Code zu tippen.</div>
+   <div class="steps">
+     <div class="step"><div class="n">1</div><div><b>Block antippen</b><p>Links in der Palette auf einen Block tippen. Er landet in deinem Skript.</p></div></div>
+     <div class="step"><div class="n">2</div><div><b>Werte ändern</b><p>Zahlen, Texte und Auswahl direkt im Block anpassen. Mit ↑ ↓ umsortieren, mit ✕ löschen.</p></div></div>
+     <div class="step"><div class="n">3</div><div><b>▶ Start drücken</b><p>Dein Programm läuft von oben nach unten ab. Schau der Figur auf der Bühne zu.</p></div></div>
+     <div class="step"><div class="n">4</div><div><b>Aufträge lösen</b><p>Unter der Bühne führt dich Level für Level durch die echte Programmierlogik.</p></div></div>
+   </div>
+   <div class="actions">
+     <button class="btn-primary" id="ovStart">Los geht's 🚀</button>
+   </div>`;
+}
+function helpHTML(){
+  return `
+   <h2>❓ Hilfe & Ideen</h2>
+   <div class="sub">Kurz nachschlagen, weiterbauen.</div>
+   <ol>
+     <li><b>Blöcke anbauen:</b> links antippen. In einen <span class="kbd">{ }</span>-Block (wiederhole / wenn) baust du hinein, indem du dessen Innenbereich antippst.</li>
+     <li><b>Reihenfolge = Ablauf:</b> Blöcke laufen von oben nach unten. Mit ↑ ↓ umsortieren.</li>
+     <li><b>Schleife:</b> <span class="kbd">wiederhole n mal</span> führt alle Blöcke in sich mehrfach aus.</li>
+     <li><b>Variable Punkte:</b> mit <span class="kbd">setze</span> / <span class="kbd">ändere</span> steuern. In einem sag-Text den Platzhalter <span class="kbd">{Punkte}</span> schreiben — er wird durch den Wert ersetzt.</li>
+     <li><b>Entscheidung:</b> <span class="kbd">wenn</span> führt seinen Inhalt nur aus, wenn die Bedingung stimmt.</li>
+     <li><b>Figur wechseln:</b> Emoji unter der Bühne oder die Figur selbst antippen.</li>
+   </ol>
+   <div class="actions">
+     <button class="btn-secondary" id="ovTour">Willkommen nochmal zeigen</button>
+     <button class="btn-primary" id="ovClose">Weiterbauen</button>
+   </div>`;
+}
+function openOverlay(html){
+  const ov=document.getElementById("overlay"), card=document.getElementById("card");
+  card.innerHTML=html; ov.classList.add("show");
+  const s=document.getElementById("ovStart"); if(s) s.onclick=closeOverlay;
+  const c=document.getElementById("ovClose"); if(c) c.onclick=closeOverlay;
+  const t=document.getElementById("ovTour"); if(t) t.onclick=()=>openOverlay(welcomeHTML());
+}
+function closeOverlay(){ document.getElementById("overlay").classList.remove("show"); ensureAudio(); }
+
+/* ---------- Toast ---------- */
+let toastT=null;
+function flashToast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1100);
+}
+
+/* ---------- Tabs (schmal) ---------- */
+function initTabs(){
+  document.querySelectorAll(".tabbar button").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".tabbar button").forEach(b=>b.classList.remove("act"));
+      btn.classList.add("act");
+      const t=btn.dataset.tab; const map={pal:"pal",scr:"scr",stg:"stg"};
+      document.querySelectorAll(".col").forEach(c=>c.classList.remove("act"));
+      document.querySelector(`.col[data-col="${map[t]}"]`).classList.add("act");
+    };
+  });
+}
+
+/* ---------- Buttons ---------- */
+function initButtons(){
+  document.getElementById("btnRun").onclick = ()=>{ runProgram(); // auf schmal: Bühne zeigen
+    if(window.matchMedia("(max-width:900px)").matches){ document.querySelector('.tabbar button[data-tab="stg"]').click(); } };
+  document.getElementById("btnStop").onclick = stopProgram;
+  document.getElementById("btnClear").onclick = ()=>{
+    if(state.tree.length && !confirm("Wirklich das ganze Skript löschen?")) return;
+    state.tree=[]; state.activeParent=null; renderScript(); saveLocal(); flashToast("Skript geleert");
+  };
+  document.getElementById("btnHelp").onclick = ()=>openOverlay(helpHTML());
+  const sb=document.getElementById("btnSound");
+  const updSound=()=> sb.textContent = state.sound? "🔊 Ton":"🔇 Ton";
+  updSound();
+  sb.onclick=()=>{ state.sound=!state.sound; updSound(); saveLocal(); if(state.sound){ensureAudio();playSound("Piep");} };
+  actor().onclick=()=>{ const i=(ACTORS.indexOf(state.actor)+1)%ACTORS.length; state.actor=ACTORS[i]; actor().textContent=state.actor; renderActorPick(); saveLocal(); };
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") { closeOverlay(); if(state.running) stopProgram(); } });
+}
+
+/* ---------- Start ---------- */
+function init(){
+  const had = loadLocal();
+  renderPalette(); renderActorPick(); renderScript(); renderMission();
+  actor().textContent = state.actor;
+  document.getElementById("btnSound").textContent = state.sound? "🔊 Ton":"🔇 Ton";
+  initTabs(); initButtons();
+  if(!had && !localStorage.getItem("merian_quatsch_seen")){
+    openOverlay(welcomeHTML());
+    try{ localStorage.setItem("merian_quatsch_seen","1"); }catch(e){}
+  }
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mit ChatGPT dein Spiel bauen · Vibecoding Merian GMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10;
+    --bg-1:#16161b;
+    --bg-2:#1d1d24;
+    --bg-3:#25252e;
+    --accent:#00b4f0;
+    --accent-2:#4fd0ff;
+    --accent-soft:rgba(0,180,240,0.12);
+    --accent-line:rgba(0,180,240,0.30);
+    --text:#f3f4f6;
+    --dim:#9ca1aa;
+    --dim-2:#6f747d;
+    --border:#2b2b34;
+    --green:#2ec07a;
+    --green-soft:rgba(46,192,122,0.12);
+    --orange:#f0a63a;
+    --orange-soft:rgba(240,166,58,0.12);
+    --radius:18px;
+    --radius-s:12px;
+    --shadow:0 18px 50px -20px rgba(0,0,0,0.8);
+    --sans:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --display:'Space Grotesk',var(--sans);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding:0 20px 80px;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  ::selection{background:var(--accent);color:#04141b}
+
+  /* ---------- Header ---------- */
+  header{
+    padding:56px 0 40px;
+    position:relative;
+  }
+  .glow{
+    position:absolute;top:-120px;left:50%;transform:translateX(-50%);
+    width:520px;height:340px;
+    background:radial-gradient(closest-side,rgba(0,180,240,0.20),transparent 70%);
+    pointer-events:none;z-index:0;filter:blur(8px);
+  }
+  header > *{position:relative;z-index:1}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--display);font-weight:600;
+    font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--accent-line);
+    padding:6px 14px;border-radius:999px;margin-bottom:22px;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  h1{
+    font-family:var(--display);font-weight:700;
+    font-size:clamp(30px,7vw,46px);line-height:1.08;
+    letter-spacing:-.02em;margin-bottom:16px;
+  }
+  h1 .hl{color:var(--accent)}
+  .lead{font-size:clamp(17px,2.6vw,20px);color:var(--dim);max-width:44ch}
+  .toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .tool-btn{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--display);font-weight:600;font-size:15px;
+    padding:13px 20px;border-radius:var(--radius-s);
+    text-decoration:none;cursor:pointer;border:1px solid transparent;
+    transition:transform .12s ease,background .2s ease,border-color .2s ease;
+  }
+  .tool-btn:active{transform:translateY(1px)}
+  .tool-btn.primary{background:var(--accent);color:#04141b}
+  .tool-btn.primary:hover{background:var(--accent-2)}
+  .tool-btn.ghost{background:var(--bg-1);color:var(--text);border-color:var(--border)}
+  .tool-btn.ghost:hover{border-color:var(--accent-line)}
+  .tool-btn .ico{font-size:18px;line-height:1}
+
+  /* ---------- Section basics ---------- */
+  section{margin-top:52px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+  .sec-num{
+    font-family:var(--display);font-weight:700;font-size:14px;
+    color:var(--accent);border:1px solid var(--accent-line);
+    background:var(--accent-soft);border-radius:8px;
+    padding:2px 9px;flex:none;
+  }
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(22px,4vw,28px);letter-spacing:-.01em}
+  .sec-sub{color:var(--dim);margin-top:-8px;margin-bottom:20px}
+
+  /* ---------- Regeln ---------- */
+  .rules{display:grid;grid-template-columns:1fr;gap:12px}
+  .rule{
+    display:flex;gap:16px;align-items:flex-start;
+    background:var(--bg-1);border:1px solid var(--border);
+    border-radius:var(--radius);padding:18px 20px;
+  }
+  .rule .rnum{
+    font-family:var(--display);font-weight:700;font-size:17px;
+    width:38px;height:38px;flex:none;border-radius:10px;
+    display:grid;place-items:center;
+    background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);
+  }
+  .rule b{color:var(--text);font-weight:700}
+  .rule p{color:var(--dim);font-size:15.5px;margin-top:2px}
+
+  /* ---------- Stepper (Ablauf) ---------- */
+  .steps{display:flex;flex-direction:column;gap:12px}
+  .step{
+    background:var(--bg-1);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .step.open{border-color:var(--accent-line)}
+  .step-head{
+    display:flex;align-items:center;gap:16px;width:100%;
+    background:none;border:none;color:inherit;font-family:inherit;
+    text-align:left;cursor:pointer;padding:18px 20px;
+  }
+  .step-badge{
+    font-family:var(--display);font-weight:700;font-size:18px;
+    width:44px;height:44px;flex:none;border-radius:12px;
+    display:grid;place-items:center;
+    background:var(--bg-3);color:var(--dim);
+    transition:background .2s,color .2s;
+  }
+  .step.open .step-badge{background:var(--accent);color:#04141b;box-shadow:0 0 18px -4px var(--accent)}
+  .step-title{flex:1}
+  .step-title .t{font-family:var(--display);font-weight:600;font-size:18px}
+  .step-title .s{color:var(--dim);font-size:14.5px;margin-top:1px}
+  .chev{color:var(--dim-2);font-size:20px;transition:transform .25s ease;flex:none}
+  .step.open .chev{transform:rotate(90deg);color:var(--accent)}
+  .step-body{
+    max-height:0;overflow:hidden;
+    transition:max-height .32s ease;
+  }
+  .step-body-inner{padding:2px 20px 22px 80px}
+  .step-body-inner p{color:var(--dim);margin-bottom:12px}
+  .step-body-inner p strong{color:var(--text)}
+  @media(max-width:520px){.step-body-inner{padding-left:20px}}
+
+  .tip{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--accent-soft);border:1px solid var(--accent-line);
+    border-radius:var(--radius-s);padding:13px 16px;margin-top:6px;
+    font-size:15px;color:var(--text);
+  }
+  .tip .ti{color:var(--accent);font-weight:700;flex:none}
+  .tip.warn{background:var(--orange-soft);border-color:rgba(240,166,58,0.30)}
+  .tip.warn .ti{color:var(--orange)}
+  .star{color:var(--accent);font-weight:700}
+
+  /* ---------- Vergleich schwammig/konkret ---------- */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.compare{grid-template-columns:1fr}}
+  .cmp{border-radius:var(--radius);padding:18px;border:1px solid var(--border);background:var(--bg-1)}
+  .cmp.bad{border-color:rgba(240,166,58,0.32)}
+  .cmp.good{border-color:rgba(46,192,122,0.32)}
+  .cmp .tag{
+    font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.06em;
+    text-transform:uppercase;display:inline-flex;align-items:center;gap:7px;margin-bottom:10px;
+  }
+  .cmp.bad .tag{color:var(--orange)}
+  .cmp.good .tag{color:var(--green)}
+  .cmp .quote{font-size:16.5px;color:var(--text);font-weight:500;line-height:1.45}
+  .cmp .why{font-size:14px;color:var(--dim);margin-top:10px}
+
+  /* ---------- Baukasten / Werkzeuge ---------- */
+  .builder{
+    background:var(--bg-1);border:1px solid var(--border);
+    border-radius:var(--radius);padding:22px;
+  }
+  .field{margin-bottom:20px}
+  .field:last-child{margin-bottom:0}
+  .flabel{font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:10px;display:block}
+  .flabel .opt{color:var(--dim-2);font-weight:500;font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{
+    font-family:var(--sans);font-size:14.5px;font-weight:500;
+    padding:9px 15px;border-radius:999px;cursor:pointer;
+    background:var(--bg-2);color:var(--dim);border:1px solid var(--border);
+    transition:all .15s ease;user-select:none;
+  }
+  .chip:hover{border-color:var(--accent-line);color:var(--text)}
+  .chip.on{background:var(--accent);color:#04141b;border-color:var(--accent);font-weight:600}
+  .chip.on.multi{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);font-weight:600}
+  input[type=text],textarea{
+    width:100%;background:var(--bg-2);border:1px solid var(--border);
+    color:var(--text);font-family:var(--sans);font-size:15.5px;
+    padding:12px 15px;border-radius:var(--radius-s);resize:vertical;
+  }
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{min-height:74px;line-height:1.5}
+  ::placeholder{color:var(--dim-2)}
+
+  .output{
+    margin-top:20px;background:#0a0a0c;border:1px solid var(--accent-line);
+    border-radius:var(--radius-s);overflow:hidden;
+  }
+  .output-top{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 14px 11px 16px;border-bottom:1px solid var(--border);
+    background:var(--accent-soft);
+  }
+  .output-top .lbl{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+  .copy-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--display);font-weight:600;font-size:14px;
+    background:var(--accent);color:#04141b;border:none;cursor:pointer;
+    padding:8px 15px;border-radius:9px;transition:transform .12s,background .2s;
+  }
+  .copy-btn:active{transform:translateY(1px)}
+  .copy-btn.done{background:var(--green)}
+  .output pre{
+    padding:16px;font-family:'DM Sans',monospace;font-size:15px;line-height:1.6;
+    white-space:pre-wrap;word-break:break-word;color:var(--text);
+  }
+
+  /* ---------- Checkliste ---------- */
+  .checklist{display:flex;flex-direction:column;gap:10px}
+  .check{
+    display:flex;align-items:center;gap:14px;cursor:pointer;
+    background:var(--bg-1);border:1px solid var(--border);
+    border-radius:var(--radius-s);padding:14px 18px;user-select:none;
+    transition:border-color .18s,background .18s;
+  }
+  .check:hover{border-color:var(--accent-line)}
+  .check.on{background:var(--green-soft);border-color:rgba(46,192,122,0.35)}
+  .box{
+    width:26px;height:26px;flex:none;border-radius:8px;
+    border:2px solid var(--dim-2);display:grid;place-items:center;
+    color:transparent;font-weight:900;font-size:15px;transition:all .18s;
+  }
+  .check.on .box{background:var(--green);border-color:var(--green);color:#04140b}
+  .check .ctext{font-size:16px}
+  .check.on .ctext{color:var(--text)}
+  .done-banner{
+    margin-top:16px;text-align:center;padding:20px;
+    border-radius:var(--radius);border:1px solid rgba(46,192,122,0.4);
+    background:var(--green-soft);
+    opacity:0;transform:translateY(8px);transition:all .3s;
+    pointer-events:none;height:0;overflow:hidden;padding-top:0;padding-bottom:0;
+  }
+  .done-banner.show{opacity:1;transform:none;height:auto;padding:20px;pointer-events:auto}
+  .done-banner .big{font-family:var(--display);font-weight:700;font-size:22px;color:var(--green)}
+  .done-banner p{color:var(--dim);margin-top:6px}
+
+  /* ---------- Footer ---------- */
+  footer{
+    margin-top:64px;padding-top:26px;border-top:1px solid var(--border);
+    text-align:center;color:var(--dim-2);font-size:14px;
+  }
+  footer .m{font-family:var(--display);font-weight:600;color:var(--dim);margin-bottom:4px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="glow"></div>
+    <span class="kicker"><span class="dot"></span>Vibecoding · Merian GMS</span>
+    <h1>So baust du dein Spiel<br>mit <span class="hl">ChatGPT</span></h1>
+    <p class="lead">Du sagst der KI in normaler Sprache, was du willst. Sie schreibt den Code. Hier steht Schritt für Schritt, wie das gut klappt.</p>
+    <div class="toolbar">
+      <a class="tool-btn primary" href="https://chatgpt.com" target="_blank" rel="noopener"><span class="ico">↗</span>ChatGPT öffnen</a>
+      <!-- Editor-Link ggf. an den echten Pfad auf ab.domodomus.de anpassen -->
+      <a class="tool-btn ghost" href="vibecoding_editor_merian.html"><span class="ico">▸</span>Zum Editor</a>
+    </div>
+  </header>
+
+  <!-- ============ REGELN ============ -->
+  <section>
+    <div class="sec-head"><h2>Zuerst: drei Regeln</h2></div>
+    <div class="rules">
+      <div class="rule">
+        <div class="rnum">1</div>
+        <div><b>Keine echten Namen, keine privaten Daten.</b><p>Nur Spielideen in die KI tippen. Keine Adressen, keine Handynummern, nichts Persönliches von dir oder anderen.</p></div>
+      </div>
+      <div class="rule">
+        <div class="rnum">2</div>
+        <div><b>Fehler sind normal.</b><p>Wenn etwas nicht geht, ist das kein Problem, sondern dein eigentlicher Job. Fehler zu beschreiben und zurückzumelden ist die wichtigste Fähigkeit hier.</p></div>
+      </div>
+      <div class="rule">
+        <div class="rnum">3</div>
+        <div><b>Immer nur eine Sache auf einmal ändern.</b><p>Eine Änderung, dann testen, dann die nächste. So merkst du sofort, was gewirkt hat und was den Fehler gemacht hat.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABLAUF / STEPPER ============ -->
+  <section>
+    <div class="sec-head"><h2>Der Ablauf in 6 Schritten</h2></div>
+    <p class="sec-sub">Tipp auf einen Schritt, um ihn aufzuklappen.</p>
+    <div class="steps" id="steps">
+
+      <div class="step open">
+        <button class="step-head" type="button">
+          <span class="step-badge">1</span>
+          <span class="step-title"><span class="t">Idee finden</span><span class="s">Was für ein Spiel willst du bauen?</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>Überleg dir in <strong>einem Satz</strong>, was passieren soll. Ein Fang-Spiel? Ein Quiz? Memory? Ein Klick-Marathon? Je klarer deine Idee, desto leichter geht der Rest.</p>
+          <div class="tip"><span class="ti">Tipp</span><span>Fang klein an. „Ein Ball fällt runter, ich klicke ihn an und bekomme einen Punkt“ ist schon ein komplettes Spiel.</span></div>
+        </div></div>
+      </div>
+
+      <div class="step">
+        <button class="step-head" type="button">
+          <span class="step-badge">2</span>
+          <span class="step-title"><span class="t">Der KI genau sagen, was du willst</span><span class="s">Konkret schlägt schwammig</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>Öffne ChatGPT und beschreib dein Spiel so <strong>genau wie möglich</strong>. Die KI kann nicht raten, was in deinem Kopf ist. Sie baut das, was du sagst.</p>
+          <p>Unten im <strong>Prompt-Baukasten</strong> kannst du dir mit ein paar Klicks eine fertige, gute Ansage zusammenstellen und kopieren.</p>
+          <div class="tip"><span class="ti">Merke</span><span>Sag der KI immer dazu: „Alles in <em>eine</em> HTML-Datei, ich bin Schüler, halte den Code einfach.“</span></div>
+        </div></div>
+      </div>
+
+      <div class="step">
+        <button class="step-head" type="button">
+          <span class="step-badge">3</span>
+          <span class="step-title"><span class="t">Code holen und einsetzen</span><span class="s">Kopieren, einfügen, starten</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>ChatGPT schreibt dir jetzt HTML-Code. So bringst du ihn ins Spiel:</p>
+          <p>1. Den <strong>ganzen Code</strong> markieren und kopieren.<br>
+             2. In den <strong>Editor</strong> wechseln.<br>
+             3. Alles löschen, was im Code-Feld steht, und deinen Code einfügen.<br>
+             4. Auf <strong>Starten</strong> drücken.</p>
+          <div class="tip"><span class="ti">Tipp</span><span>ChatGPT zeigt Code oft in einem grauen Kasten mit einem kleinen „Kopieren“-Knopf oben rechts. Nimm den, dann hast du sicher alles.</span></div>
+        </div></div>
+      </div>
+
+      <div class="step">
+        <button class="step-head" type="button">
+          <span class="step-badge">4</span>
+          <span class="step-title"><span class="t">Testen</span><span class="s">Funktioniert es? Sieht es aus wie gedacht?</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>Schau dir dein Spiel an und probier es aus. Klick alles durch. Stell dir dabei zwei Fragen: <strong>Macht es, was ich wollte?</strong> Und: <strong>Was fehlt oder stört noch?</strong></p>
+          <p>Merk dir, was noch nicht passt. Genau das sagst du im nächsten Schritt der KI.</p>
+        </div></div>
+      </div>
+
+      <div class="step">
+        <button class="step-head" type="button">
+          <span class="step-badge">5</span>
+          <span class="step-title"><span class="t">Fehler zurückmelden</span><span class="s">Der wichtigste Schritt überhaupt</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>Etwas geht nicht? <strong>Perfekt.</strong> Genau das ist die eigentliche Aufgabe. Der Trick: Sag der KI ganz <strong>genau</strong>, was schiefläuft.</p>
+          <p>Nicht: <span style="color:var(--orange)">„geht nicht“</span>.<br>
+             Sondern: <span style="color:var(--green)">„Der Ball bewegt sich nicht, wenn ich klicke.“</span></p>
+          <p>Unten hilft dir der <strong>Fehler-Melder</strong>, das gut zu formulieren und zu kopieren.</p>
+          <div class="tip warn"><span class="ti">Wichtig</span><span>Je genauer du das Problem beschreibst, desto genauer kann die KI es reparieren. „Beschreiben können“ ist hier die Superkraft.</span></div>
+        </div></div>
+      </div>
+
+      <div class="step">
+        <button class="step-head" type="button">
+          <span class="step-badge">6</span>
+          <span class="step-title"><span class="t">Verbessern und abgeben</span><span class="s">Schritt für Schritt bis zum fertigen Spiel</span></span>
+          <span class="chev">›</span>
+        </button>
+        <div class="step-body"><div class="step-body-inner">
+          <p>Jetzt machst du dein Spiel besser: eine Idee dazu prompten, neuen Code holen, testen. Immer <strong>nur eine Änderung</strong>, dann wieder testen.</p>
+          <p>Wenn du zufrieden bist: im Editor auf <strong>Speichern</strong> tippen (du bekommst eine <strong>.html</strong>-Datei) und diese über <strong>itslearning</strong> abgeben.</p>
+          <div class="tip"><span class="ti">Tipp</span><span>Nimm dir am Ende die Checkliste ganz unten vor, dann vergisst du nichts.</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ VERGLEICH ============ -->
+  <section>
+    <div class="sec-head"><h2>Schwammig oder konkret?</h2></div>
+    <p class="sec-sub">Dieselbe Idee, zwei Ansagen an die KI. Sieh den Unterschied.</p>
+    <div class="compare">
+      <div class="cmp bad">
+        <span class="tag">✗ So besser nicht</span>
+        <div class="quote">„Mach mir ein cooles Spiel.“</div>
+        <div class="why">Die KI muss raten. Ergebnis meistens irgendwas, aber selten das, was du im Kopf hattest.</div>
+      </div>
+      <div class="cmp good">
+        <span class="tag">✓ So klappt es</span>
+        <div class="quote">„Baue ein Fang-Spiel: ein blauer Kreis fällt von oben, ich klicke ihn an und bekomme pro Treffer einen Punkt.“</div>
+        <div class="why">Klar, konkret, testbar. Die KI weiß genau, was sie bauen soll.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROMPT-BAUKASTEN ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">Werkzeug</span><h2>Prompt-Baukasten</h2></div>
+    <p class="sec-sub">Klick dir deine Ansage zusammen, kopiere sie und füg sie bei ChatGPT ein.</p>
+    <div class="builder">
+      <div class="field">
+        <label class="flabel">Was für ein Spiel?</label>
+        <div class="chips" id="gameChips">
+          <span class="chip on" data-val="ein Fang-Spiel">Fang-Spiel</span>
+          <span class="chip" data-val="ein Quiz">Quiz</span>
+          <span class="chip" data-val="ein Memory-Spiel">Memory</span>
+          <span class="chip" data-val="ein Klick-Marathon (so oft wie möglich klicken)">Klick-Marathon</span>
+          <span class="chip" data-val="ein eigenes kleines Spiel">Eigene Idee</span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Was soll drin sein? <span class="opt">(mehrere möglich)</span></label>
+        <div class="chips" id="featChips">
+          <span class="chip multi" data-val="einen Punktezähler">Punktezähler</span>
+          <span class="chip multi" data-val="einen Startknopf">Startknopf</span>
+          <span class="chip multi" data-val="einen Timer (z. B. 30 Sekunden)">Timer</span>
+          <span class="chip multi" data-val="eine Nachricht am Ende (gewonnen/verloren)">Gewinn-Nachricht</span>
+          <span class="chip multi" data-val="bunte Farben">Bunte Farben</span>
+          <span class="chip multi" data-val="einen Knopf zum Neustarten">Neustart-Knopf</span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Dein Thema <span class="opt">(optional)</span></label>
+        <input type="text" id="themaInput" placeholder="z. B. Tiere, Fußball, Weltraum …">
+      </div>
+
+      <div class="output">
+        <div class="output-top">
+          <span class="lbl">Deine Ansage an ChatGPT</span>
+          <button class="copy-btn" type="button" data-target="promptOut"><span class="ci">⧉</span><span class="ct">Kopieren</span></button>
+        </div>
+        <pre id="promptOut"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEHLER-MELDER ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">Werkzeug</span><h2>Es funktioniert nicht?</h2></div>
+    <p class="sec-sub">Wähl aus, was los ist, beschreib es kurz, kopier die Rückmeldung.</p>
+    <div class="builder">
+      <div class="field">
+        <label class="flabel">Was ist das Problem?</label>
+        <div class="chips" id="bugChips">
+          <span class="chip on" data-val="Es passiert gar nichts.">Nichts passiert</span>
+          <span class="chip" data-val="Ein Knopf reagiert nicht, wenn ich ihn anklicke.">Knopf geht nicht</span>
+          <span class="chip" data-val="Es sieht anders aus als gedacht.">Sieht falsch aus</span>
+          <span class="chip" data-val="Es läuft viel zu schnell oder zu langsam.">Zu schnell/langsam</span>
+          <span class="chip" data-val="Es kommt eine Fehlermeldung.">Fehlermeldung</span>
+          <span class="chip" data-val="Etwas anderes stimmt nicht.">Etwas anderes</span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Beschreib es in eigenen Worten <span class="opt">(hilft der KI am meisten)</span></label>
+        <textarea id="bugText" placeholder="z. B. Der Ball fällt, aber wenn ich ihn anklicke, ändert sich der Punktestand nicht."></textarea>
+      </div>
+
+      <div class="output">
+        <div class="output-top">
+          <span class="lbl">Deine Fehler-Rückmeldung</span>
+          <button class="copy-btn" type="button" data-target="bugOut"><span class="ci">⧉</span><span class="ct">Kopieren</span></button>
+        </div>
+        <pre id="bugOut"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHECKLISTE ============ -->
+  <section>
+    <div class="sec-head"><h2>Fertig? Kurz durchhaken</h2></div>
+    <div class="checklist" id="checklist">
+      <label class="check"><span class="box">✓</span><span class="ctext">Mein Spiel startet, wenn ich auf Starten klicke.</span></label>
+      <label class="check"><span class="box">✓</span><span class="ctext">Es macht das, was ich wollte.</span></label>
+      <label class="check"><span class="box">✓</span><span class="ctext">Ich habe keine echten Namen oder privaten Daten benutzt.</span></label>
+      <label class="check"><span class="box">✓</span><span class="ctext">Ich habe meine Datei gespeichert (.html).</span></label>
+      <label class="check"><span class="box">✓</span><span class="ctext">Ich habe über itslearning abgegeben.</span></label>
+    </div>
+    <div class="done-banner" id="doneBanner">
+      <div class="big">Stark. Alles erledigt.</div>
+      <p>Du hast mit einer KI etwas gebaut, das wirklich läuft. Genau darum ging es.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="m">Merian Gemeinschaftsschule Dußlingen</div>
+    <div>Vibecoding · Sprache rein, Code raus</div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Stepper ---------- */
+  var steps = document.querySelectorAll('#steps .step');
+  steps.forEach(function(step){
+    var head = step.querySelector('.step-head');
+    var body = step.querySelector('.step-body');
+    function sync(){ body.style.maxHeight = step.classList.contains('open') ? (body.scrollHeight + 'px') : '0px'; }
+    // init open ones
+    if(step.classList.contains('open')){ requestAnimationFrame(sync); }
+    head.addEventListener('click', function(){
+      step.classList.toggle('open');
+      sync();
+    });
+  });
+  // keep open step heights correct on resize
+  window.addEventListener('resize', function(){
+    document.querySelectorAll('#steps .step.open .step-body').forEach(function(b){
+      b.style.maxHeight = b.scrollHeight + 'px';
+    });
+  });
+
+  /* ---------- Chip helpers ---------- */
+  function singleSelect(containerId, onChange){
+    var box = document.getElementById(containerId);
+    box.querySelectorAll('.chip').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        box.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+        chip.classList.add('on');
+        onChange();
+      });
+    });
+  }
+  function multiSelect(containerId, onChange){
+    document.getElementById(containerId).querySelectorAll('.chip').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        chip.classList.toggle('on');
+        onChange();
+      });
+    });
+  }
+  function selectedVal(containerId){
+    var el = document.querySelector('#'+containerId+' .chip.on');
+    return el ? el.getAttribute('data-val') : '';
+  }
+  function selectedVals(containerId){
+    return Array.prototype.map.call(
+      document.querySelectorAll('#'+containerId+' .chip.on'),
+      function(c){ return c.getAttribute('data-val'); }
+    );
+  }
+  function joinList(arr){
+    if(arr.length === 0) return '';
+    if(arr.length === 1) return arr[0];
+    return arr.slice(0,-1).join(', ') + ' und ' + arr[arr.length-1];
+  }
+
+  /* ---------- Prompt-Baukasten ---------- */
+  var themaInput = document.getElementById('themaInput');
+  var promptOut  = document.getElementById('promptOut');
+
+  function buildPrompt(){
+    var game  = selectedVal('gameChips') || 'ein einfaches Spiel';
+    var feats = selectedVals('featChips');
+    var thema = themaInput.value.trim();
+
+    var t = 'Baue mir ' + game + ' als eine einzige HTML-Datei. ';
+    t += 'Alles (HTML, CSS und JavaScript) soll in dieser einen Datei stehen, ohne externe Dateien.';
+    if(thema){ t += '\n\nThema: ' + thema + '.'; }
+    if(feats.length){ t += '\n\nEs soll ' + joinList(feats) + ' geben.'; }
+    t += '\n\nHalte den Code einfach und erklär mir kurz, wo ich die Farben ändern kann. Ich bin Schülerin/Schüler und lerne gerade Vibecoding.';
+    promptOut.textContent = t;
+  }
+
+  singleSelect('gameChips', buildPrompt);
+  multiSelect('featChips', buildPrompt);
+  themaInput.addEventListener('input', buildPrompt);
+  buildPrompt();
+
+  /* ---------- Fehler-Melder ---------- */
+  var bugText = document.getElementById('bugText');
+  var bugOut  = document.getElementById('bugOut');
+  var bugTouched = false;
+  bugText.addEventListener('input', function(){ bugTouched = true; buildBug(); });
+
+  function buildBug(){
+    var chosen = selectedVal('bugChips');
+    var own = bugText.value.trim();
+    var problem = own ? own : chosen;
+    var t = 'Ich habe deinen Code ausprobiert, aber etwas funktioniert nicht:\n\n"' + (problem || 'Es geht etwas nicht.') + '"\n\n';
+    t += 'Kannst du den Fehler suchen und mir den kompletten, verbesserten Code wieder als eine einzige HTML-Datei geben? Sag mir bitte auch kurz in einem Satz, was falsch war.';
+    bugOut.textContent = t;
+  }
+  document.getElementById('bugChips').querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('#bugChips .chip').forEach(function(c){ c.classList.remove('on'); });
+      chip.classList.add('on');
+      // Fill textarea with a starter unless the student already typed
+      if(!bugTouched){ bugText.value = chip.getAttribute('data-val'); }
+      buildBug();
+    });
+  });
+  buildBug();
+
+  /* ---------- Copy buttons ---------- */
+  function flash(btn){
+    var ct = btn.querySelector('.ct'), ci = btn.querySelector('.ci');
+    var oldT = ct.textContent, oldI = ci.textContent;
+    btn.classList.add('done'); ci.textContent = '✓'; ct.textContent = 'Kopiert!';
+    setTimeout(function(){ btn.classList.remove('done'); ci.textContent = oldI; ct.textContent = oldT; }, 1600);
+  }
+  function copyText(text, btn){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ flash(btn); }).catch(function(){ fallbackCopy(text, btn); });
+    } else {
+      fallbackCopy(text, btn);
+    }
+  }
+  function fallbackCopy(text, btn){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.top='-1000px';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand('copy'); flash(btn); }catch(e){}
+    document.body.removeChild(ta);
+  }
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = document.getElementById(btn.getAttribute('data-target'));
+      copyText(target.textContent, btn);
+    });
+  });
+
+  /* ---------- Checkliste ---------- */
+  var checks = document.querySelectorAll('#checklist .check');
+  var banner = document.getElementById('doneBanner');
+  checks.forEach(function(c){
+    c.addEventListener('click', function(){
+      c.classList.toggle('on');
+      var all = Array.prototype.every.call(checks, function(x){ return x.classList.contains('on'); });
+      banner.classList.toggle('show', all);
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

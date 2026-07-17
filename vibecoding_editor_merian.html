@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Vibecoding-Editor · Merian GMS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10; --card:#1a1a1f; --raised:#222228;
+    --accent:#00b4f0; --accent-dim:rgba(0,180,240,0.12);
+    --text:#e8f0f8; --muted:#a0b0c0; --border:rgba(0,180,240,0.18);
+    --danger:#ff6b6b; --success:#4ecdc4; --warn:#ffd166;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text);
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+
+  /* Kopfzeile */
+  .top{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:10px 14px; border-bottom:1px solid var(--border); background:var(--card);
+    flex-shrink:0;
+  }
+  .badge{
+    background:var(--accent-dim); border:1px solid var(--border); border-radius:8px;
+    padding:6px 12px; font-family:'Space Grotesk',sans-serif; font-size:.72rem;
+    font-weight:700; color:var(--accent); letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .top h1{
+    font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700;
+    white-space:nowrap;
+  }
+  .top .status{
+    font-size:.75rem; color:var(--muted); margin-left:auto; white-space:nowrap;
+    display:flex; align-items:center; gap:6px;
+  }
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--success);}
+
+  /* Umschalter (nur schmal sichtbar) */
+  .tabs{display:none; gap:8px; padding:8px 14px 0; flex-shrink:0;}
+  .tab{
+    flex:1; background:var(--raised); border:1px solid var(--border); color:var(--muted);
+    border-radius:10px 10px 0 0; padding:12px; font-family:'Space Grotesk',sans-serif;
+    font-weight:700; font-size:.9rem; cursor:pointer; min-height:48px;
+  }
+  .tab.active{background:var(--card); color:var(--accent); border-bottom-color:transparent;}
+
+  /* Arbeitsbereich */
+  .work{display:flex; flex:1; min-height:0; gap:1px; background:var(--border);}
+  .pane{display:flex; flex-direction:column; min-width:0; min-height:0; background:var(--bg);}
+  .pane.code{flex:1;}
+  .pane.preview{flex:1;}
+  .pane-head{
+    display:flex; align-items:center; gap:8px; padding:8px 14px;
+    background:var(--card); border-bottom:1px solid var(--border); flex-shrink:0;
+    flex-wrap:wrap;
+  }
+  .pane-head .lbl{
+    font-family:'Space Grotesk',sans-serif; font-size:.7rem; font-weight:700;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--accent);
+  }
+  .pane-head .spacer{margin-left:auto;}
+
+  textarea#code{
+    flex:1; width:100%; border:none; resize:none; padding:14px;
+    background:var(--bg); color:var(--text); line-height:1.5;
+    font-family:'Space Grotesk','SF Mono',ui-monospace,monospace; font-size:14px;
+    tab-size:2; outline:none;
+  }
+
+  iframe#frame{flex:1; width:100%; border:none; background:#fff;}
+
+  /* Knöpfe */
+  .btn{
+    background:var(--raised); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:10px 14px; font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:.82rem; cursor:pointer; min-height:44px;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+    transition:background .12s, opacity .12s;
+  }
+  .btn:hover{background:#2b2b34;}
+  .btn.primary{background:var(--accent); color:#0e0e10; border-color:var(--accent);}
+  .btn.primary:hover{opacity:.85; background:var(--accent);}
+  .btn.ghost{background:transparent;}
+
+  /* Vollbild-Overlay */
+  .overlay{
+    position:fixed; inset:0; background:var(--bg); z-index:50;
+    display:none; flex-direction:column;
+  }
+  .overlay.open{display:flex;}
+  .overlay-head{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--card); border-bottom:1px solid var(--border);
+  }
+  .overlay iframe{flex:1; width:100%; border:none; background:#fff;}
+
+  /* Modal (Hilfe + Vorlagen) */
+  .modal{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal.open{display:flex;}
+  .modal-card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px 16px 0 0; width:100%; max-width:640px;
+    max-height:82vh; overflow-y:auto; padding:20px;
+  }
+  .modal-card h2{
+    font-family:'Space Grotesk',sans-serif; font-size:1.1rem; margin-bottom:4px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .modal-card h2 .close{margin-left:auto;}
+  .modal-card p.lead{color:var(--muted); font-size:.9rem; margin-bottom:16px;}
+
+  /* Vorlagen-Auswahl */
+  .vorlage-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .vorlage-karte{
+    display:flex; flex-direction:column; gap:4px; text-align:left;
+    background:var(--raised); border:1px solid var(--border); border-radius:12px;
+    padding:14px; cursor:pointer; min-height:80px; transition:background .12s;
+  }
+  .vorlage-karte:hover{background:#2b2b34;}
+  .vk-titel{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:.95rem; color:var(--text);}
+  .vk-desc{font-size:.78rem; color:var(--muted); line-height:1.35;}
+
+  /* Hilfe-Inhalte */
+  .help-sec{margin-bottom:18px;}
+  .help-sec .t{
+    font-family:'Space Grotesk',sans-serif; font-size:.72rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:8px;
+  }
+  .prompt{
+    background:var(--raised); border:1px solid var(--border); border-left:3px solid var(--accent);
+    border-radius:0 10px 10px 0; padding:10px 12px; margin-bottom:8px; font-size:.88rem;
+    color:var(--text); line-height:1.4;
+  }
+  .steps{list-style:none; counter-reset:s;}
+  .steps li{
+    position:relative; padding:6px 0 6px 34px; font-size:.9rem; color:var(--text); line-height:1.45;
+  }
+  .steps li::before{
+    counter-increment:s; content:counter(s); position:absolute; left:0; top:5px;
+    width:22px; height:22px; background:var(--accent-dim); border:1px solid var(--border);
+    border-radius:50%; color:var(--accent); font-family:'Space Grotesk',sans-serif;
+    font-weight:700; font-size:.75rem; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Editor-Tour (geführter Rundgang) */
+  .tour{position:fixed; inset:0; z-index:70; display:none;}
+  .tour.open{display:block;}
+  .tour-spot{
+    position:fixed; border-radius:12px;
+    box-shadow:0 0 0 9999px rgba(0,0,0,.68);
+    border:2px solid var(--accent);
+    transition:top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+    pointer-events:none;
+  }
+  .tour-card{
+    position:fixed; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:16px 18px;
+    width:min(360px, calc(100vw - 24px));
+    box-shadow:0 12px 40px rgba(0,0,0,.55);
+  }
+  .tour-eyebrow{
+    font-family:'Space Grotesk',sans-serif; font-size:.68rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+  }
+  .tour-card h3{
+    font-family:'Space Grotesk',sans-serif; font-size:1.02rem; margin-bottom:6px;
+  }
+  .tour-card p{font-size:.88rem; line-height:1.45; color:var(--text); margin-bottom:14px;}
+  .tour-nav{display:flex; align-items:center; gap:8px;}
+  .tour-nav .spacer{margin-left:auto;}
+  @media (prefers-reduced-motion: reduce){
+    .tour-spot{transition:none;}
+  }
+
+  /* schmaler Bildschirm: Tabs statt Split */
+  @media (max-width:820px){
+    .tabs{display:flex;}
+    .work{gap:0;}
+    .pane{display:none; flex:1;}
+    .pane.show{display:flex;}
+    .vorlage-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="top">
+    <span class="badge">Merian GMS</span>
+    <h1>Vibecoding-Editor</h1>
+    <div class="status" id="statusBox"><span class="dot" id="dot"></span><span id="statusText">gespeichert</span></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabCode" onclick="showPane('code')">Code</button>
+    <button class="tab" id="tabPrev" onclick="showPane('preview'); run()">Vorschau</button>
+  </div>
+
+  <div class="work">
+    <div class="pane code show" id="paneCode">
+      <div class="pane-head">
+        <span class="lbl">Dein Code</span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="btnHelp" onclick="openHelp()">Hilfe &amp; Ideen</button>
+        <button class="btn ghost" id="btnVorlagen" onclick="openVorlagen()">Vorlage laden</button>
+      </div>
+      <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    </div>
+
+    <div class="pane preview" id="panePreview">
+      <div class="pane-head">
+        <span class="lbl">Vorschau</span>
+        <span class="spacer"></span>
+        <button class="btn" id="btnRun" onclick="run()">▶ Starten</button>
+        <button class="btn" id="btnFull" onclick="fullscreen()">⛶ Vollbild</button>
+        <button class="btn primary" id="btnSave" onclick="download()">⬇ Speichern</button>
+      </div>
+      <iframe id="frame" title="Vorschau"></iframe>
+    </div>
+  </div>
+
+  <!-- Vollbild -->
+  <div class="overlay" id="overlay">
+    <div class="overlay-head">
+      <span class="badge">Spielmodus</span>
+      <span class="spacer" style="margin-left:auto;"></span>
+      <button class="btn" onclick="closeFullscreen()">✕ Schließen</button>
+    </div>
+    <iframe id="frameFull" title="Vollbild-Vorschau"></iframe>
+  </div>
+
+  <!-- Vorlagen -->
+  <div class="modal" id="vorlagen" onclick="if(event.target===this)closeVorlagen()">
+    <div class="modal-card">
+      <h2>Vorlage laden <button class="btn ghost close" onclick="closeVorlagen()">✕</button></h2>
+      <p class="lead">Wähle ein fertiges Spiel. Es erscheint im Code-Feld. Suche dann die Zeilen mit „ÄNDERE MICH" und probier aus, was passiert, wenn du Farben, Zahlen oder Texte änderst.</p>
+      <div class="vorlage-grid">
+        <button class="vorlage-karte" onclick="ladeVorlage('fang')">
+          <span class="vk-titel">🎯 Fang-Spiel</span>
+          <span class="vk-desc">Klick das wandernde Ziel, sammle Punkte gegen die Zeit.</span>
+        </button>
+        <button class="vorlage-karte" onclick="ladeVorlage('quiz')">
+          <span class="vk-titel">❓ Quiz</span>
+          <span class="vk-desc">Eigene Fragen und Antworten eintragen, Punkte zählen.</span>
+        </button>
+        <button class="vorlage-karte" onclick="ladeVorlage('memory')">
+          <span class="vk-titel">🃏 Memory</span>
+          <span class="vk-desc">Kartenpaare finden, Symbole selbst austauschen.</span>
+        </button>
+        <button class="vorlage-karte" onclick="ladeVorlage('klick')">
+          <span class="vk-titel">⚡ Klick-Marathon</span>
+          <span class="vk-desc">So viele Klicks wie möglich in wenigen Sekunden.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hilfe -->
+  <div class="modal" id="help" onclick="if(event.target===this)closeHelp()">
+    <div class="modal-card">
+      <h2>So funktioniert's <button class="btn ghost close" onclick="closeHelp()">✕</button></h2>
+      <p class="lead">Du beschreibst einer KI, was du bauen willst. Die KI schreibt den Code. Du kopierst ihn hier ins Code-Feld und drückst „Starten". Fertig.</p>
+
+      <div class="help-sec">
+        <div class="t">Der Ablauf</div>
+        <ol class="steps">
+          <li>Öffne die KI, die deine Lehrkraft freigegeben hat.</li>
+          <li>Beschreibe dein Spiel so genau wie möglich (siehe Beispiele unten).</li>
+          <li>Schreib dazu: „Gib mir alles als <strong>eine einzige HTML-Datei</strong> mit CSS und JavaScript."</li>
+          <li>Kopiere den kompletten Code und füge ihn links ins Code-Feld ein.</li>
+          <li>Drück „Starten". Läuft was nicht? Kopiere den Code zurück in die KI und schreib, was schiefläuft.</li>
+          <li>Wenn's dir gefällt: „Speichern" drücken und die Datei bei itslearning abgeben.</li>
+        </ol>
+      </div>
+
+      <div class="help-sec">
+        <div class="t">Gute Start-Prompts</div>
+        <div class="prompt">Baue ein einfaches Reaktionsspiel: Ein farbiger Kreis erscheint an einer zufälligen Stelle, ich muss ihn anklicken, dann gibt es einen Punkt. 30 Sekunden Zeit, Punktestand oben anzeigen.</div>
+        <div class="prompt">Baue ein Quiz mit 5 Fragen zu Ernährung. Nach jeder Antwort sagen, ob richtig oder falsch, am Ende die Punktzahl zeigen.</div>
+        <div class="prompt">Baue ein Memory-Spiel mit 8 Kartenpaaren und bunten Symbolen.</div>
+        <div class="prompt">Baue einen Würfel-Simulator: Knopf drücken, Würfel wird angezeigt, Anzahl der Sechser mitzählen.</div>
+      </div>
+
+      <div class="help-sec">
+        <div class="t">Ohne KI arbeiten</div>
+        <div class="prompt" style="border-left-color:var(--warn);">Drück „Vorlage laden" und wähle ein Spiel. Dann steht fertiger Code im Feld. Ändere die mit „ÄNDERE MICH" markierten Stellen und schau, was passiert. Das ist der einfachste Einstieg.</div>
+      </div>
+
+      <div class="help-sec">
+        <div class="t">Neu hier?</div>
+        <button class="btn" onclick="closeHelp(); startTour()">▶ Tour durch den Editor starten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor-Tour -->
+  <div class="tour" id="tour" role="dialog" aria-modal="true" aria-label="Editor-Tour">
+    <div class="tour-spot" id="tourSpot"></div>
+    <div class="tour-card" id="tourCard">
+      <div class="tour-eyebrow" id="tourStep">Schritt 1 von 9</div>
+      <h3 id="tourTitle"></h3>
+      <p id="tourText"></p>
+      <div class="tour-nav">
+        <button class="btn ghost" onclick="endTour()">Überspringen</button>
+        <span class="spacer"></span>
+        <button class="btn" id="tourBack" onclick="tourPrev()">Zurück</button>
+        <button class="btn primary" id="tourNext" onclick="tourNext()">Weiter</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Vorlagen-Spiele. </script> im Code ist als <\/script> geschrieben, sonst bricht der Parser. -->
+<script>
+const VORLAGEN = {};
+
+/* ---------- 1) FANG-SPIEL ---------- */
+VORLAGEN.fang = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{
+    font-family: sans-serif;
+    text-align: center;
+    background: #0e0e10;   /* ÄNDERE MICH: Hintergrundfarbe */
+    color: #ffffff;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  h1{ margin: 12px; }
+  #spielfeld{ position: relative; width: 100%; height: 80vh; }
+  #ziel{
+    position: absolute;
+    width: 70px;           /* ÄNDERE MICH: Größe des Ziels */
+    height: 70px;
+    background: #00b4f0;   /* ÄNDERE MICH: Farbe des Ziels */
+    border-radius: 50%;    /* 50% = Kreis, 0% = Quadrat */
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <h1>Punkte: <span id="punkte">0</span> &nbsp; Zeit: <span id="zeit">30</span></h1>
+  <div id="spielfeld"><div id="ziel"></div></div>
+<script>
+  let punkte = 0;
+  let zeit = 30;               // ÄNDERE MICH: Startzeit in Sekunden
+  const ziel = document.getElementById("ziel");
+  const feld = document.getElementById("spielfeld");
+
+  function bewege(){
+    const maxX = feld.clientWidth - 70;
+    const maxY = feld.clientHeight - 70;
+    ziel.style.left = Math.random() * maxX + "px";
+    ziel.style.top  = Math.random() * maxY + "px";
+  }
+  ziel.onclick = function(){
+    punkte = punkte + 1;       // ÄNDERE MICH: z.B. + 2 für schnellere Punkte
+    document.getElementById("punkte").textContent = punkte;
+    bewege();
+  };
+  const uhr = setInterval(function(){
+    zeit = zeit - 1;
+    document.getElementById("zeit").textContent = zeit;
+    if(zeit <= 0){
+      clearInterval(uhr);
+      alert("Zeit vorbei! Du hast " + punkte + " Punkte.");
+    }
+  }, 1000);
+  bewege();
+<\/script>
+</body>
+</html>`;
+
+/* ---------- 2) QUIZ ---------- */
+VORLAGEN.quiz = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{ font-family: sans-serif; background:#0e0e10; color:#fff; text-align:center; padding:24px; }
+  h1{ color:#00b4f0; }          /* ÄNDERE MICH: Überschrift-Farbe */
+  #frage{ font-size:20px; margin:20px 0; min-height:28px; }
+  .antwort{
+    display:block; width:100%; max-width:420px; margin:8px auto; padding:14px;
+    font-size:16px; background:#222228; color:#fff;
+    border:1px solid #00b4f0; border-radius:10px; cursor:pointer;
+  }
+  .antwort:hover{ background:#2b2b34; }
+  #ergebnis{ font-size:22px; margin-top:20px; color:#4ecdc4; }
+</style>
+</head>
+<body>
+  <h1>Mein Quiz</h1>
+  <div id="frage"></div>
+  <div id="antworten"></div>
+  <div id="ergebnis"></div>
+<script>
+  // ÄNDERE MICH: Deine Fragen. richtig = Nummer der richtigen Antwort (Zählung ab 0!)
+  const fragen = [
+    { text: "Welche Farbe hat der Himmel bei Sonne?", antworten: ["Blau","Grün","Rot"], richtig: 0 },
+    { text: "Wie viele Beine hat eine Spinne?",        antworten: ["6","8","10"],        richtig: 1 },
+    { text: "Wofür steht H2O?",                        antworten: ["Gold","Wasser","Luft"], richtig: 1 }
+  ];
+
+  let aktuell = 0, punkte = 0;
+  function zeige(){
+    if(aktuell >= fragen.length){
+      document.getElementById("frage").textContent = "";
+      document.getElementById("antworten").innerHTML = "";
+      document.getElementById("ergebnis").textContent =
+        "Fertig! " + punkte + " von " + fragen.length + " richtig.";
+      return;
+    }
+    const f = fragen[aktuell];
+    document.getElementById("frage").textContent = f.text;
+    let html = "";
+    for(let i = 0; i < f.antworten.length; i++){
+      html += '<button class="antwort" onclick="pruefe(' + i + ')">' + f.antworten[i] + '</button>';
+    }
+    document.getElementById("antworten").innerHTML = html;
+  }
+  function pruefe(i){
+    if(i === fragen[aktuell].richtig){ punkte = punkte + 1; }
+    aktuell = aktuell + 1;
+    zeige();
+  }
+  zeige();
+<\/script>
+</body>
+</html>`;
+
+/* ---------- 3) MEMORY ---------- */
+VORLAGEN.memory = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{ font-family: sans-serif; background:#0e0e10; color:#fff; text-align:center; padding:16px; }
+  h1{ color:#00b4f0; }
+  #brett{ display:grid; grid-template-columns:repeat(4, 70px); gap:10px; justify-content:center; margin-top:16px; }
+  .karte{
+    width:70px; height:70px;
+    background:#00b4f0;        /* ÄNDERE MICH: Farbe der zugedeckten Karte */
+    border-radius:10px; font-size:34px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:transparent; user-select:none;
+  }
+  .karte.auf{ background:#222228; color:#fff; }
+  .karte.fertig{ background:#4ecdc4; color:#fff; }  /* Farbe bei gefundenem Paar */
+</style>
+</head>
+<body>
+  <h1>Memory</h1>
+  <p>Gefundene Paare: <span id="paare">0</span></p>
+  <div id="brett"></div>
+<script>
+  // ÄNDERE MICH: 8 Symbole ergeben 8 Paare. Nimm eigene Emojis!
+  const symbole = ["🐶","🐱","🦊","🐼","🐸","🐵","🦁","🐧"];
+
+  let karten = symbole.concat(symbole);
+  karten.sort(function(){ return Math.random() - 0.5; });   // mischen
+
+  let erste = null, paare = 0, sperre = false;
+  const brett = document.getElementById("brett");
+
+  karten.forEach(function(sym){
+    const k = document.createElement("div");
+    k.className = "karte";
+    k.dataset.sym = sym;
+    k.onclick = function(){
+      if(sperre || k.classList.contains("auf") || k.classList.contains("fertig")) return;
+      k.classList.add("auf");
+      k.textContent = sym;
+      if(erste === null){
+        erste = k;
+      } else {
+        sperre = true;
+        if(erste.dataset.sym === sym){
+          erste.classList.add("fertig");
+          k.classList.add("fertig");
+          paare = paare + 1;
+          document.getElementById("paare").textContent = paare;
+          erste = null; sperre = false;
+        } else {
+          const e = erste;
+          setTimeout(function(){
+            e.classList.remove("auf"); e.textContent = "";
+            k.classList.remove("auf"); k.textContent = "";
+            erste = null; sperre = false;
+          }, 800);   // ÄNDERE MICH: wie lange die Karten offen bleiben (Millisekunden)
+        }
+      }
+    };
+    brett.appendChild(k);
+  });
+<\/script>
+</body>
+</html>`;
+
+/* ---------- 4) KLICK-MARATHON ---------- */
+VORLAGEN.klick = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{ font-family: sans-serif; background:#0e0e10; color:#fff; text-align:center; padding:24px; }
+  h1{ color:#00b4f0; }
+  .info{ font-size:20px; margin:6px; }
+  #klick{
+    width:200px; height:200px; border-radius:50%;
+    background:#00b4f0;        /* ÄNDERE MICH: Knopf-Farbe */
+    color:#0e0e10; font-size:26px; font-weight:bold;
+    border:none; margin:20px auto; display:block; cursor:pointer;
+  }
+  #klick:active{ background:#4ecdc4; }
+</style>
+</head>
+<body>
+  <h1>Klick-Marathon</h1>
+  <p class="info">Klicks: <span id="punkte">0</span> &nbsp; Zeit: <span id="zeit">5</span>s</p>
+  <button id="klick" onclick="klicken()">KLICK!</button>
+  <p class="info">Bestwert: <span id="best">0</span></p>
+<script>
+  const RUNDENZEIT = 5;    // ÄNDERE MICH: Sekunden pro Runde
+  let punkte = 0, zeit = RUNDENZEIT, laeuft = false, best = 0, uhr;
+
+  function klicken(){
+    if(!laeuft){ start(); }
+    punkte = punkte + 1;
+    document.getElementById("punkte").textContent = punkte;
+  }
+  function start(){
+    laeuft = true;
+    zeit = RUNDENZEIT;
+    document.getElementById("zeit").textContent = zeit;
+    uhr = setInterval(function(){
+      zeit = zeit - 1;
+      document.getElementById("zeit").textContent = zeit;
+      if(zeit <= 0){
+        clearInterval(uhr);
+        laeuft = false;
+        if(punkte > best){
+          best = punkte;
+          document.getElementById("best").textContent = best;
+        }
+        alert("Zeit vorbei! " + punkte + " Klicks.");
+        punkte = 0;
+        document.getElementById("punkte").textContent = 0;
+      }
+    }, 1000);
+  }
+<\/script>
+</body>
+</html>`;
+</script>
+
+<script>
+  const codeEl = document.getElementById('code');
+  const frame = document.getElementById('frame');
+  const statusText = document.getElementById('statusText');
+  const dot = document.getElementById('dot');
+  const KEY = 'merian_vibecoding_code';
+
+  // ---- Vorschau ausführen ----
+  function run(){ frame.srcdoc = codeEl.value; }
+
+  // ---- Speichern (LocalStorage-Autospeicher) ----
+  let saveTimer;
+  function markUnsaved(){
+    statusText.textContent = 'wird gespeichert…';
+    dot.style.background = 'var(--warn)';
+  }
+  function doSave(){
+    try{
+      localStorage.setItem(KEY, codeEl.value);
+      statusText.textContent = 'gespeichert';
+      dot.style.background = 'var(--success)';
+    }catch(e){
+      statusText.textContent = 'Speicher-Fehler';
+      dot.style.background = 'var(--danger)';
+    }
+  }
+  codeEl.addEventListener('input', function(){
+    markUnsaved();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(doSave, 600);
+  });
+
+  // ---- Vorlagen ----
+  function openVorlagen(){ document.getElementById('vorlagen').classList.add('open'); }
+  function closeVorlagen(){ document.getElementById('vorlagen').classList.remove('open'); }
+  function ladeVorlage(key){
+    if(codeEl.value.trim() && !confirm('Dein aktueller Code wird ersetzt. Wirklich die Vorlage laden?')) return;
+    codeEl.value = VORLAGEN[key] || '';
+    doSave();
+    run();
+    closeVorlagen();
+    showPane('code');
+  }
+
+  // ---- Herunterladen als .html ----
+  function download(){
+    const blob = new Blob([codeEl.value], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mein-spiel.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ---- Vollbild ----
+  function fullscreen(){
+    document.getElementById('frameFull').srcdoc = codeEl.value;
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeFullscreen(){
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('frameFull').srcdoc = '';
+  }
+
+  // ---- Hilfe ----
+  function openHelp(){ document.getElementById('help').classList.add('open'); }
+  function closeHelp(){ document.getElementById('help').classList.remove('open'); }
+
+  // ---- Tab-Umschaltung (schmaler Bildschirm) ----
+  function showPane(which){
+    document.getElementById('paneCode').classList.toggle('show', which==='code');
+    document.getElementById('panePreview').classList.toggle('show', which==='preview');
+    document.getElementById('tabCode').classList.toggle('active', which==='code');
+    document.getElementById('tabPrev').classList.toggle('active', which==='preview');
+  }
+
+  // Tab-Zeichen in der Textarea erlauben (statt Fokus-Sprung)
+  codeEl.addEventListener('keydown', function(e){
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      const s = this.selectionStart, en = this.selectionEnd;
+      this.value = this.value.slice(0,s) + '  ' + this.value.slice(en);
+      this.selectionStart = this.selectionEnd = s + 2;
+    }
+  });
+
+  // ---- Editor-Tour (geführter Rundgang, überspringbar) ----
+  const TOURKEY = 'merian_vibecoding_tour_v1';
+  const TOUR_STEPS = [
+    {title:'Willkommen!', text:'Das ist der Vibecoding-Editor. Diese kurze Tour zeigt dir, wo alles ist. Sie dauert eine halbe Minute – du kannst sie jederzeit überspringen.', target:null},
+    {title:'Dein Code', text:'Hier steht dein Code. Kopiere den Code aus der KI und füge ihn hier ein. Ein Beispiel-Spiel ist schon für dich geladen.', target:'#code', pane:'code'},
+    {title:'Vorlage laden', text:'Lust auf einen schnellen Start? Lade ein fertiges Spiel und ändere die Stellen mit „ÄNDERE MICH“.', target:'#btnVorlagen', pane:'code'},
+    {title:'Hilfe &amp; Ideen', text:'Hier findest du die Anleitung Schritt für Schritt und gute Beispiel-Prompts für die KI. Auch diese Tour kannst du dort neu starten.', target:'#btnHelp', pane:'code'},
+    {title:'Starten', text:'▶ Starten führt deinen Code aus. Das Ergebnis erscheint sofort in der Vorschau.', target:'#btnRun', pane:'preview'},
+    {title:'Die Vorschau', text:'Hier läuft dein Spiel. Probier es direkt aus. ⛶ Vollbild zeigt es groß, ohne alles drumherum.', target:'#frame', pane:'preview'},
+    {title:'Speichern', text:'⬇ Speichern lädt dein Spiel als Datei herunter. Diese Datei gibst du am Ende bei itslearning ab.', target:'#btnSave', pane:'preview'},
+    {title:'Automatisch gesichert', text:'Der Editor speichert deinen Code automatisch auf diesem Gerät. Der grüne Punkt zeigt: alles gesichert.', target:'#statusBox'},
+    {title:'Fertig!', text:'Jetzt bist du dran: Vorlage remixen oder mit der KI dein eigenes Spiel bauen. Viel Spaß!', target:null}
+  ];
+  let tourIdx = 0, tourActive = false;
+  const tourEl = document.getElementById('tour');
+  const spotEl = document.getElementById('tourSpot');
+  const cardEl = document.getElementById('tourCard');
+
+  function startTour(){
+    tourIdx = 0;
+    tourActive = true;
+    tourEl.classList.add('open');
+    showTourStep(0);
+    document.getElementById('tourNext').focus();
+  }
+  function endTour(){
+    tourActive = false;
+    tourEl.classList.remove('open');
+    try{ localStorage.setItem(TOURKEY, 'done'); }catch(e){}
+    if(window.innerWidth <= 820) showPane('code');
+  }
+  function tourNext(){
+    if(tourIdx >= TOUR_STEPS.length - 1){ endTour(); return; }
+    showTourStep(tourIdx + 1);
+  }
+  function tourPrev(){
+    if(tourIdx > 0) showTourStep(tourIdx - 1);
+  }
+  function showTourStep(i){
+    tourIdx = i;
+    const s = TOUR_STEPS[i];
+    if(s.pane && window.innerWidth <= 820) showPane(s.pane);
+    document.getElementById('tourStep').textContent = 'Schritt ' + (i+1) + ' von ' + TOUR_STEPS.length;
+    document.getElementById('tourTitle').innerHTML = s.title;
+    document.getElementById('tourText').innerHTML = s.text;
+    document.getElementById('tourBack').style.visibility = (i === 0) ? 'hidden' : 'visible';
+    document.getElementById('tourNext').textContent = (i === TOUR_STEPS.length - 1) ? 'Los geht’s ✓' : 'Weiter';
+    requestAnimationFrame(positionTour);
+  }
+  function positionTour(){
+    const s = TOUR_STEPS[tourIdx];
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const el = s.target ? document.querySelector(s.target) : null;
+    const rect = (el && el.getBoundingClientRect().width > 0) ? el.getBoundingClientRect() : null;
+    const pad = 6;
+
+    spotEl.style.borderWidth = rect ? '2px' : '0px';
+    if(rect){
+      spotEl.style.top = (rect.top - pad) + 'px';
+      spotEl.style.left = (rect.left - pad) + 'px';
+      spotEl.style.width = (rect.width + pad*2) + 'px';
+      spotEl.style.height = (rect.height + pad*2) + 'px';
+    }else{
+      spotEl.style.top = (vh/2) + 'px';
+      spotEl.style.left = (vw/2) + 'px';
+      spotEl.style.width = '0px';
+      spotEl.style.height = '0px';
+    }
+
+    // Karte positionieren: schmal = unten fixiert, sonst frei am Ziel
+    cardEl.style.right = 'auto'; cardEl.style.bottom = 'auto'; cardEl.style.width = '';
+    if(!rect){
+      const cw = cardEl.offsetWidth, ch = cardEl.offsetHeight;
+      cardEl.style.left = Math.max(12, (vw - cw)/2) + 'px';
+      cardEl.style.top = Math.max(12, (vh - ch)/2) + 'px';
+      return;
+    }
+    if(vw <= 820){
+      cardEl.style.left = '12px';
+      cardEl.style.right = '12px';
+      cardEl.style.width = 'auto';
+      cardEl.style.top = 'auto';
+      cardEl.style.bottom = '12px';
+      return;
+    }
+    const cw = cardEl.offsetWidth, ch = cardEl.offsetHeight;
+    let top = rect.bottom + 12;
+    if(top + ch > vh - 12){
+      top = rect.top - 12 - ch;
+      if(top < 12) top = vh - ch - 12;
+    }
+    let left = rect.left + rect.width/2 - cw/2;
+    left = Math.min(Math.max(12, left), vw - cw - 12);
+    cardEl.style.top = top + 'px';
+    cardEl.style.left = left + 'px';
+  }
+  window.addEventListener('resize', function(){ if(tourActive) positionTour(); });
+  document.addEventListener('keydown', function(e){
+    if(!tourActive) return;
+    if(e.key === 'Escape') endTour();
+    else if(e.key === 'ArrowRight') tourNext();
+    else if(e.key === 'ArrowLeft') tourPrev();
+  });
+
+  // ---- Start: gespeicherten Code oder Fang-Spiel laden ----
+  (function init(){
+    const saved = localStorage.getItem(KEY);
+    codeEl.value = (saved && saved.trim()) ? saved : VORLAGEN.fang;
+    run();
+    let seen = null;
+    try{ seen = localStorage.getItem(TOURKEY); }catch(e){}
+    if(!seen) setTimeout(startTour, 400);
+  })();
+</script>
+</body>
+</html>

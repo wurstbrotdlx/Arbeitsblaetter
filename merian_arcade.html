@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merian Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10;
+    --card:#17171b;
+    --card2:#1d1d22;
+    --line:rgba(255,255,255,.09);
+    --brand:#00b4f0;
+    --brand-dim:rgba(0,180,240,.14);
+    --text:#e9e9ec;
+    --muted:#9a9aa2;
+    --head:"Space Grotesk", system-ui, sans-serif;
+    --body:"DM Sans", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+  header.top{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+  .kicker{font-family:var(--head);color:var(--brand);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:13px}
+  h1{font-family:var(--head);font-weight:700;font-size:clamp(30px,6vw,50px);margin:2px 0 0;line-height:1.05}
+  .sub{color:var(--muted);font-size:16px;max-width:60ch}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0 26px}
+  .count{color:var(--muted);font-size:14px;margin-right:auto}
+  button{font-family:var(--body);cursor:pointer;border:0}
+  .btn{
+    background:var(--card2);color:var(--text);border:1px solid var(--line);
+    padding:11px 16px;border-radius:12px;font-size:15px;font-weight:500;
+    transition:.15s;
+  }
+  .btn:hover{border-color:var(--brand);color:#fff}
+  .btn.primary{background:var(--brand);color:#04121a;border-color:var(--brand);font-weight:700}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .tile{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:20px;text-align:left;display:flex;flex-direction:column;gap:14px;
+    min-height:170px;transition:.16s;position:relative;overflow:hidden;
+  }
+  .tile:hover{transform:translateY(-3px);border-color:var(--brand);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  .tile .emoji{font-size:40px;line-height:1}
+  .tile .t-title{font-family:var(--head);font-weight:700;font-size:20px}
+  .tile .t-author{color:var(--muted);font-size:14px;margin-top:auto}
+  .tile .play{color:var(--brand);font-weight:700;font-size:14px}
+  .glow{position:absolute;inset:auto -30px -30px auto;width:120px;height:120px;background:var(--brand-dim);filter:blur(30px);border-radius:50%;pointer-events:none}
+  .empty{
+    grid-column:1/-1;background:var(--card);border:1px dashed var(--line);
+    border-radius:18px;padding:34px;color:var(--muted);line-height:1.6;
+  }
+  .empty code{background:#000;color:var(--brand);padding:2px 7px;border-radius:6px;font-size:13px}
+  .empty b{color:var(--text)}
+  /* Overlay-Player */
+  .overlay{position:fixed;inset:0;background:rgba(6,6,8,.94);display:none;flex-direction:column;z-index:50}
+  .overlay.on{display:flex}
+  .ov-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .ov-title{font-family:var(--head);font-weight:700;font-size:18px;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ov-author{color:var(--muted);font-size:14px;margin-right:auto}
+  .iconbtn{background:var(--card2);border:1px solid var(--line);color:var(--text);width:44px;height:44px;border-radius:11px;font-size:19px;display:grid;place-items:center}
+  .iconbtn:hover{border-color:var(--brand);color:#fff}
+  .ov-frame{flex:1;position:relative;background:#000}
+  .ov-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+  .missing{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--muted);padding:24px;line-height:1.6}
+  .missing.on{display:grid}
+  footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
+  @media (max-width:520px){
+    .ov-author{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker" id="kickerLabel">Vibecoding Projekt</div>
+    <h1 id="arcadeTitle">Merian Arcade</h1>
+    <p class="sub" id="arcadeSub">Alle Spiele, die ihr am Projekttag gebaut habt. Tippt auf eine Kachel und spielt los.</p>
+  </header>
+
+  <div class="bar">
+    <span class="count" id="count"></span>
+    <button class="btn primary" id="randomBtn">Zufälliges Spiel</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>Merian Gemeinschaftsschule Dußlingen · gebaut von euch mit KI</footer>
+</div>
+
+<!-- Overlay-Player -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="ov-bar">
+    <span class="ov-title" id="ovTitle">Spiel</span>
+    <span class="ov-author" id="ovAuthor"></span>
+    <button class="iconbtn" id="prevBtn" title="Vorheriges Spiel" aria-label="Vorheriges Spiel">‹</button>
+    <button class="iconbtn" id="nextBtn" title="Nächstes Spiel" aria-label="Nächstes Spiel">›</button>
+    <button class="iconbtn" id="fsBtn" title="Vollbild" aria-label="Vollbild">⤢</button>
+    <button class="iconbtn" id="closeBtn" title="Schließen" aria-label="Schließen">✕</button>
+  </div>
+  <div class="ov-frame" id="ovFrame">
+    <iframe id="gameFrame" title="Spiel" allowfullscreen></iframe>
+    <div class="missing" id="missing">Diese Datei wurde noch nicht hochgeladen.<br>Prüfe den Dateinamen im Konfig-Block der Arcade.</div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   HIER SPIELE EINTRAGEN
+   Für jedes fertige Schülerspiel eine Zeile ergänzen.
+   - titel : wie das Spiel heißen soll
+   - autor : Vorname oder Kürzel (KEINE vollen Klarnamen nötig)
+   - datei : Dateiname der hochgeladenen .html (im selben Ordner wie diese Seite),
+             oder eine komplette URL. Beispiel: "flappy_ente_max.html"
+   Reihenfolge egal. Zeilen, die ihr nicht braucht, einfach löschen.
+   ========================================================================= */
+const SPIELE = [
+  { titel: "Fang-Spiel Deluxe", autor: "Beispiel", datei: "beispiel1.html" },
+  { titel: "Mathe-Quiz 3000",   autor: "Beispiel", datei: "beispiel2.html" },
+  { titel: "Klick-Marathon",    autor: "Beispiel", datei: "beispiel3.html" },
+  // { titel: "Dein Spiel", autor: "Kürzel", datei: "deinspiel.html" },
+];
+
+/* Optional anpassbar: Überschrift und Untertitel der Seite */
+const TITEL_TEXT = "Merian Arcade";
+const KICKER_TEXT = "Vibecoding Projekt";
+const UNTERTITEL  = "Alle Spiele, die ihr am Projekttag gebaut habt. Tippt auf eine Kachel und spielt los.";
+
+/* ===================== ab hier nichts mehr ändern nötig ================== */
+
+const EMOJIS = ["🎮","👾","🕹️","🚀","⭐","🎯","🧩","🏓","🦆","💥","🎲","🐍","🍄","⚡","🎈","🛸"];
+function emojiFor(i){ return EMOJIS[i % EMOJIS.length]; }
+
+const gridEl = document.getElementById("grid");
+const countEl = document.getElementById("count");
+const overlay = document.getElementById("overlay");
+const gameFrame = document.getElementById("gameFrame");
+const ovTitle = document.getElementById("ovTitle");
+const ovAuthor = document.getElementById("ovAuthor");
+const missing = document.getElementById("missing");
+
+document.getElementById("arcadeTitle").textContent = TITEL_TEXT;
+document.getElementById("kickerLabel").textContent = KICKER_TEXT;
+document.getElementById("arcadeSub").textContent = UNTERTITEL;
+
+let current = -1;
+
+function render(){
+  gridEl.innerHTML = "";
+  if(!SPIELE.length){
+    const e = document.createElement("div");
+    e.className = "empty";
+    e.innerHTML = 'Noch keine Spiele eingetragen. <b>So geht es:</b><br>' +
+      'Öffne diese Datei in einem Editor und trage im Bereich <code>const SPIELE</code> ' +
+      'oben im Script für jedes fertige Spiel eine Zeile mit Titel, Kürzel und Dateiname ein. ' +
+      'Lege die Spiel-Dateien in denselben Ordner wie diese Seite.';
+    gridEl.appendChild(e);
+    countEl.textContent = "";
+    return;
+  }
+  countEl.textContent = SPIELE.length === 1 ? "1 Spiel" : SPIELE.length + " Spiele";
+  SPIELE.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.className = "tile";
+    b.innerHTML =
+      '<div class="glow"></div>' +
+      '<div class="emoji">' + emojiFor(i) + '</div>' +
+      '<div class="t-title">' + escapeHtml(s.titel) + '</div>' +
+      '<div class="t-author">von ' + escapeHtml(s.autor || "unbekannt") + '</div>' +
+      '<div class="play">Spielen ›</div>';
+    b.addEventListener("click", () => openGame(i));
+    gridEl.appendChild(b);
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => (
+    {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]
+  ));
+}
+
+function openGame(i){
+  if(i < 0 || i >= SPIELE.length) return;
+  current = i;
+  const s = SPIELE[i];
+  ovTitle.textContent = s.titel;
+  ovAuthor.textContent = s.autor ? "von " + s.autor : "";
+  missing.classList.remove("on");
+  gameFrame.style.visibility = "visible";
+  gameFrame.onerror = showMissing;
+  gameFrame.src = s.datei;
+  overlay.classList.add("on");
+  document.body.style.overflow = "hidden";
+}
+function showMissing(){
+  missing.classList.add("on");
+  gameFrame.style.visibility = "hidden";
+}
+function closeGame(){
+  overlay.classList.remove("on");
+  gameFrame.src = "about:blank";
+  document.body.style.overflow = "";
+  current = -1;
+}
+function step(dir){
+  if(!SPIELE.length) return;
+  let n = current + dir;
+  if(n < 0) n = SPIELE.length - 1;
+  if(n >= SPIELE.length) n = 0;
+  openGame(n);
+}
+function randomGame(){
+  if(!SPIELE.length) return;
+  const i = Math.floor(Math.random() * SPIELE.length);
+  openGame(i);
+}
+
+document.getElementById("closeBtn").addEventListener("click", closeGame);
+document.getElementById("prevBtn").addEventListener("click", () => step(-1));
+document.getElementById("nextBtn").addEventListener("click", () => step(1));
+document.getElementById("randomBtn").addEventListener("click", randomGame);
+document.getElementById("fsBtn").addEventListener("click", () => {
+  const el = document.getElementById("ovFrame");
+  if(el.requestFullscreen) el.requestFullscreen();
+  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+});
+document.addEventListener("keydown", (e) => {
+  if(!overlay.classList.contains("on")) return;
+  if(e.key === "Escape") closeGame();
+  if(e.key === "ArrowRight") step(1);
+  if(e.key === "ArrowLeft") step(-1);
+});
+
+render();
+</script>
+</body>
+</html>

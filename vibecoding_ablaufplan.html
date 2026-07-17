@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ablaufplan: Vibecoding-Projekt · AES Klasse 8/9</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10; --card:#1a1a1f; --raised:#222228;
+    --accent:#00b4f0; --accent-dim:rgba(0,180,240,0.12);
+    --text:#e8f0f8; --muted:#a0b0c0; --border:rgba(0,180,240,0.18);
+    --success:#4ecdc4; --warn:#ffd166;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text);
+    padding:28px 18px 60px; line-height:1.55;
+  }
+  .wrap{max-width:820px; margin:0 auto;}
+
+  header{
+    display:flex; align-items:center; gap:16px;
+    padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid var(--border);
+  }
+  .badge{
+    background:var(--accent-dim); border:1px solid var(--border); border-radius:10px;
+    padding:9px 15px; font-family:'Space Grotesk',sans-serif; font-size:.72rem;
+    font-weight:700; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  header h1{ font-family:'Space Grotesk',sans-serif; font-size:1.5rem; line-height:1.2; }
+  header .sub{ font-size:.9rem; color:var(--muted); margin-top:3px; }
+
+  .meta{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+  .chip{
+    background:var(--raised); border:1px solid var(--border); border-radius:20px;
+    padding:6px 14px; font-size:.8rem; color:var(--muted);
+  }
+  .chip b{ color:var(--accent); font-weight:600; }
+
+  .day-title{
+    font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--accent);
+    margin:26px 0 14px; display:flex; align-items:center; gap:10px;
+  }
+  .day-title::before{
+    content:""; width:10px; height:10px; border-radius:50%; background:var(--accent);
+  }
+
+  .phase{
+    display:grid; grid-template-columns:96px 1fr; gap:16px;
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .phase .time{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--accent);
+    font-size:.9rem; white-space:nowrap;
+  }
+  .phase .what .h{ font-weight:600; margin-bottom:3px; }
+  .phase .what .d{ font-size:.86rem; color:var(--muted); }
+
+  .pause{
+    text-align:center; font-size:.78rem; color:var(--warn); letter-spacing:.06em;
+    text-transform:uppercase; font-family:'Space Grotesk',sans-serif; font-weight:600;
+    margin:6px 0; padding:6px;
+  }
+
+  .note{
+    background:var(--accent-dim); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; margin-top:26px; font-size:.88rem; color:var(--muted); line-height:1.6;
+  }
+  .note b{ color:var(--accent); }
+  .note ul{ margin:8px 0 0 18px; }
+  .note li{ margin-bottom:4px; }
+
+  .print-btn{
+    display:block; margin:32px auto 0; background:var(--accent); color:#0e0e10; border:none;
+    border-radius:12px; padding:13px 30px; font-family:'Space Grotesk',sans-serif;
+    font-size:1rem; font-weight:700; cursor:pointer;
+  }
+
+  @media print{
+    .print-btn{ display:none; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body{ background:#fff; color:#111; padding:16px; font-size:10.5pt; }
+    :root{
+      --bg:#fff; --card:#f5f7fa; --raised:#eef2f6; --accent:#006fa8;
+      --accent-dim:#e8f4fb; --text:#111; --muted:#444; --border:#ccc;
+    }
+    .phase{ break-inside:avoid; }
+    header{ border-bottom:2px solid #006fa8; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="badge">Merian GMS</div>
+    <div>
+      <h1>Vibecoding-Projekt</h1>
+      <div class="sub">Ablaufplan für zwei Vormittage · AES Klasse 8/9</div>
+    </div>
+  </header>
+
+  <div class="meta">
+    <div class="chip">Fach: <b>AES</b></div>
+    <div class="chip">Zeit: <b>Mo + Di, 8:00–12:25</b></div>
+    <div class="chip">Werkzeug: <b>Vibecoding-Editor + ChatGPT</b></div>
+    <div class="chip">Abgabe: <b>itslearning (.html)</b></div>
+  </div>
+
+  <!-- TAG 1 -->
+  <div class="day-title">Tag 1 · Einstieg und erstes Erfolgserlebnis</div>
+
+  <div class="phase">
+    <div class="time">ca. 20 min</div>
+    <div class="what">
+      <div class="h">Einstieg + Live-Demo</div>
+      <div class="d">Kurz erklären, was Vibecoding ist. Dann selbst am Beamer eine KI prompten, damit alle sehen, wie aus einem Satz ein Spiel wird. (Einstiegsfolien nutzen.)</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="time">ca. 15 min</div>
+    <div class="what">
+      <div class="h">Werkzeug zeigen</div>
+      <div class="d">Editor öffnen, „Vorlage laden", „Starten", Vollbild, „Speichern". Regeln klären: Login mit Schul-Mail, keine echten Namen eingeben, nur Spielideen.</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="time">ca. 40 min</div>
+    <div class="what">
+      <div class="h">Remix-Runde (alle gleich)</div>
+      <div class="d">Alle laden dieselbe Vorlage und ändern nur die „ÄNDERE MICH"-Stellen: Farben, Zahlen, Texte. Ziel: jede*r sieht in den ersten 45 Minuten etwas Funktionierendes.</div>
+    </div>
+  </div>
+
+  <div class="pause">Pause</div>
+
+  <div class="phase">
+    <div class="time">Rest Vormittag</div>
+    <div class="what">
+      <div class="h">Eigenes Projekt starten</div>
+      <div class="d">Jede*r wählt eine Spielidee, promptet mit ChatGPT, kopiert den Code in den Editor, testet und verbessert. Fehler zurück in die KI kopieren und beschreiben, was schiefläuft. Ziel bis Ende Tag 1: ein laufendes Mini-Spiel.</div>
+    </div>
+  </div>
+
+  <!-- TAG 2 -->
+  <div class="day-title">Tag 2 · Ausbauen und Galerie</div>
+
+  <div class="phase">
+    <div class="time">ca. 15 min</div>
+    <div class="what">
+      <div class="h">Warmup</div>
+      <div class="d">Kurz reinkommen: wer noch unsicher ist, remixt eine Vorlage der Wahl. Wer schon ein Projekt hat, macht direkt weiter.</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="time">Vormittag</div>
+    <div class="what">
+      <div class="h">Weiterbauen und Bug-Runden</div>
+      <div class="d">Am eigenen Spiel arbeiten. Bei Problemen: Code zurück in ChatGPT, Fehler beschreiben, neue Version einbauen. Du gehst rum und hilfst beim präzisen Beschreiben, nicht beim Tippen.</div>
+    </div>
+  </div>
+
+  <div class="pause">Pause</div>
+
+  <div class="phase">
+    <div class="time">ca. 45 min</div>
+    <div class="what">
+      <div class="h">Feinschliff + Abgabe</div>
+      <div class="d">Gestaltung verbessern, dann „Speichern" drücken und die .html-Datei über itslearning abgeben.</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="time">Schluss</div>
+    <div class="what">
+      <div class="h">Galerie-Rundgang</div>
+      <div class="d">Alle zeigen ihr Spiel am iPad oder am Beamer. Kurz: Was war die Idee, was war der kniffligste Moment?</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Für dich zur Erinnerung</b>
+    <ul>
+      <li>Der eigentliche Lernmoment ist der Fehler: gutes Beschreiben und Zurückmelden ist die Kompetenz, nicht das Tippen.</li>
+      <li>Schwächere SuS bleiben notfalls im Remix-Modus (Vorlagen ändern), das ist ein vollwertiger Weg.</li>
+      <li>Speichern-Button vorab einmal auf einem iPad in Firefox testen. Fallback: Code kopieren, in Textdatei einfügen, als .html speichern.</li>
+      <li>Pausenzeiten nach eurem Rhythmus einsetzen, die Dauern oben sind Richtwerte.</li>
+    </ul>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+
+</div>
+</body>
+</html>

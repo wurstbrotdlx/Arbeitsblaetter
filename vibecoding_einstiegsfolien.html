@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibecoding · Einstieg</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0e10; --accent:#00b4f0; --accent-dim:rgba(0,180,240,0.12);
+    --text:#e8f0f8; --muted:#a0b0c0; --border:rgba(0,180,240,0.22); --warn:#ffd166;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text);
+    height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; user-select:none;
+  }
+
+  .badge{
+    position:fixed; top:26px; left:26px;
+    background:var(--accent-dim); border:1px solid var(--border); border-radius:10px;
+    padding:8px 15px; font-family:'Space Grotesk',sans-serif; font-size:.8rem;
+    font-weight:700; color:var(--accent); letter-spacing:.08em; text-transform:uppercase;
+  }
+  .counter{
+    position:fixed; top:26px; right:26px; font-family:'Space Grotesk',sans-serif;
+    font-size:.85rem; color:var(--muted);
+  }
+  .hint{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+    font-size:.8rem; color:var(--muted); opacity:.7;
+  }
+
+  .slide{
+    display:none; width:100%; max-width:960px; padding:0 48px; text-align:center;
+    animation:fade .35s ease;
+  }
+  .slide.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:22px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; line-height:1.08;
+    font-size:clamp(2.4rem, 7vw, 4.6rem); margin-bottom:20px;
+  }
+  h1 .glow{ color:var(--accent); }
+  .lead{ font-size:clamp(1.1rem, 2.6vw, 1.7rem); color:var(--muted); line-height:1.5; }
+
+  .steps{ display:inline-block; text-align:left; margin-top:14px; }
+  .steps .row{
+    display:flex; align-items:center; gap:18px; margin:14px 0;
+    font-size:clamp(1.1rem, 2.4vw, 1.6rem);
+  }
+  .steps .n{
+    flex-shrink:0; width:46px; height:46px; border-radius:50%;
+    background:var(--accent-dim); border:1px solid var(--border); color:var(--accent);
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+  }
+
+  .rules{ display:inline-block; text-align:left; margin-top:10px; }
+  .rules .r{
+    font-size:clamp(1.1rem, 2.5vw, 1.6rem); margin:16px 0; display:flex; gap:14px; align-items:flex-start;
+  }
+  .rules .r .ic{ color:var(--accent); font-weight:700; flex-shrink:0; }
+  .rules .r.warn .ic{ color:var(--warn); }
+
+  .go{
+    margin-top:8px; font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--accent);
+    font-size:clamp(1.3rem, 3vw, 2rem);
+  }
+</style>
+</head>
+<body onclick="next()">
+
+  <div class="badge">Merian GMS</div>
+  <div class="counter"><span id="cur">1</span> / <span id="tot">5</span></div>
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="eyebrow">AES · Klasse 8/9</div>
+    <h1>Bau dein eigenes <span class="glow">Spiel</span>.<br>Mit KI.</h1>
+    <p class="lead">Heute und morgen wirst du zum Spiele-Erfinder. Kein Vorwissen nötig.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">Was ist Vibecoding?</div>
+    <h1>Du sagst,<br>die <span class="glow">KI</span> baut.</h1>
+    <p class="lead">Du beschreibst mit Worten, was du willst. Die KI schreibt den Code. Du testest, verbesserst, wiederholst.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="eyebrow">So läuft's</div>
+    <div class="steps">
+      <div class="row"><span class="n">1</span> KI öffnen und dein Spiel beschreiben</div>
+      <div class="row"><span class="n">2</span> Code in den Editor kopieren</div>
+      <div class="row"><span class="n">3</span> „Starten" drücken und ausprobieren</div>
+      <div class="row"><span class="n">4</span> Verbessern: der KI sagen, was noch fehlt</div>
+      <div class="row"><span class="n">5</span> Speichern und bei itslearning abgeben</div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="eyebrow">Drei Regeln</div>
+    <div class="rules">
+      <div class="r"><span class="ic">✓</span> Anmelden mit deiner Schul-Mailadresse.</div>
+      <div class="r warn"><span class="ic">✗</span> Keine echten Namen, Adressen oder persönlichen Daten eingeben. Nur Spielideen.</div>
+      <div class="r"><span class="ic">✓</span> Fehler sind normal. Kopier den Code zurück in die KI und sag, was nicht klappt.</div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="eyebrow">Bereit?</div>
+    <h1>Los <span class="glow">geht's</span>.</h1>
+    <p class="go">Öffne den Editor und leg los.</p>
+  </section>
+
+  <div class="hint">Klick oder Pfeiltaste → zum Weiterblättern</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let i = 0;
+  document.getElementById('tot').textContent = slides.length;
+
+  function show(n){
+    slides[i].classList.remove('active');
+    i = (n + slides.length) % slides.length;
+    slides[i].classList.add('active');
+    document.getElementById('cur').textContent = i + 1;
+  }
+  function next(){ show(i + 1); }
+  function prev(){ show(i - 1); }
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); next(); }
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+  });
+</script>
+</body>
+</html>

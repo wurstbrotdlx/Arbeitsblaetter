@@ -57,10 +57,10 @@
   .block{border-radius:9px;padding:8px 9px 8px 11px;margin-top:6px;color:#111;font-weight:500;font-size:13.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;box-shadow:0 2px 5px rgba(0,0,0,.35);position:relative;}
   .block .lbl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .block .ic{font-size:15px;}
-  .block input,.block select{font-family:var(--font-body);font-weight:600;font-size:13px;border:none;border-radius:6px;padding:4px 7px;background:rgba(255,255,255,.82);color:#111;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
-  .block input.txt{min-width:88px;}
-  .block input.num{width:52px;text-align:center;}
-  .block select{padding-right:4px;}
+  .block input,.block select,.chead input,.chead select{font-family:var(--font-body);font-weight:600;font-size:13px;border:none;border-radius:6px;padding:4px 7px;background:rgba(255,255,255,.82);color:#111;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+  .block input.txt,.chead input.txt{min-width:88px;}
+  .block input.num,.chead input.num{width:52px;text-align:center;}
+  .block select,.chead select{padding-right:4px;}
   .block .ctrls{margin-left:auto;display:flex;gap:3px;align-items:center;}
   .iconbtn{width:26px;height:26px;border:none;border-radius:7px;background:rgba(0,0,0,.16);color:#111;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;}
   .iconbtn:hover{background:rgba(0,0,0,.28);}
@@ -110,8 +110,8 @@
   .actorpick button:active{transform:scale(.9);}
 
   @keyframes hop{0%,100%{bottom:34%;}40%{bottom:calc(34% + 70px);}70%{bottom:34%;}}
-  @keyframes wobble{0%,100%{transform:translate(-50%,0) rotate(0);}25%{transform:translate(-50%,0) rotate(-13deg);}75%{transform:translate(-50%,0) rotate(13deg);}}
-  @keyframes spin360{from{transform:translate(-50%,0) rotate(0);}to{transform:translate(-50%,0) rotate(360deg);}}
+  @keyframes wobble{0%,100%{transform:translate(-50%,0) scale(var(--s,1)) rotate(0);}25%{transform:translate(-50%,0) scale(var(--s,1)) rotate(-13deg);}75%{transform:translate(-50%,0) scale(var(--s,1)) rotate(13deg);}}
+  @keyframes spin360{from{transform:translate(-50%,0) scale(var(--s,1)) rotate(0);}to{transform:translate(-50%,0) scale(var(--s,1)) rotate(360deg);}}
   .conf{position:absolute;width:11px;height:11px;top:-14px;border-radius:2px;pointer-events:none;}
   @keyframes fall{to{transform:translateY(120vh) rotate(540deg);opacity:.2;}}
 
@@ -383,13 +383,16 @@ function makeCtrls(node, list, idx){
   const c = document.createElement("div"); c.className="ctrls";
   const up = iconBtn("↑", ()=>move(list,idx,-1)); up.disabled = idx===0;
   const dn = iconBtn("↓", ()=>move(list,idx,1)); dn.disabled = idx===list.length-1;
-  const del = iconBtn("✕", ()=>del(list,idx,node));
-  c.append(up,dn,del);
+  const rm = iconBtn("✕", ()=>del(list,idx,node));
+  c.append(up,dn,rm);
   return c;
 }
 function iconBtn(txt, fn){ const b=document.createElement("button"); b.className="iconbtn"; b.textContent=txt; b.onclick=(e)=>{e.stopPropagation();fn();}; return b; }
 function move(list,idx,dir){ const j=idx+dir; if(j<0||j>=list.length)return; [list[idx],list[j]]=[list[j],list[idx]]; renderScript(); saveLocal(); }
-function del(list,idx,node){ if(state.activeParent===node) state.activeParent=null; list.splice(idx,1); renderScript(); saveLocal(); }
+function del(list,idx,node){
+  if(state.activeParent && (state.activeParent===node || (node.children && anyNode(n=>n===state.activeParent, node.children)))) state.activeParent=null;
+  list.splice(idx,1); renderScript(); saveLocal();
+}
 
 function setActiveParent(node){
   state.activeParent = (state.activeParent===node)? null : node;
@@ -399,7 +402,8 @@ function updateInsertHint(){
   const h = document.getElementById("insertHint");
   if(state.activeParent){
     const def = findDef(state.activeParent.type);
-    h.innerHTML = `Neue Blöcke landen gerade <b>in der ${def.label}-Schleife</b>. Tipp auf den Rahmen, um wieder ganz nach außen zu bauen.`;
+    const wo = state.activeParent.type==="if" ? "im wenn-Block" : `in der ${def.label}-Schleife`;
+    h.innerHTML = `Neue Blöcke landen gerade <b>${wo}</b>. Tipp auf den Rahmen, um wieder ganz nach außen zu bauen.`;
   } else {
     h.innerHTML = `Neue Blöcke landen gerade <b>im Hauptskript</b>. Bei ${"{ }"}-Blöcken den Innenbereich antippen, um hinein zu bauen.`;
   }
@@ -408,7 +412,7 @@ function updateInsertHint(){
 /* ---------- Bühne / Figur ---------- */
 const actor = ()=>document.getElementById("actor");
 let scale = 1, animTimer=null;
-function resetActor(){ scale=1; actor().style.transform="translate(-50%,0)"; actor().style.filter="none"; actor().className="actor"; }
+function resetActor(){ scale=1; const a=actor(); a.style.setProperty("--s",1); a.style.transform="translate(-50%,0)"; a.style.filter="none"; a.className="actor"; }
 
 function playAnim(name, ms){
   return new Promise(res=>{
@@ -418,7 +422,7 @@ function playAnim(name, ms){
     setTimeout(()=>{ a.style.animation=""; if(name==="spin360"||name==="wobble") a.style.transform="translate(-50%,0) scale("+scale+")"; res(); }, ms);
   });
 }
-function applyScale(){ actor().style.transform = `translate(-50%,0) scale(${scale})`; }
+function applyScale(){ const a=actor(); a.style.setProperty("--s",scale); a.style.transform = `translate(-50%,0) scale(${scale})`; }
 function setColor(v){
   const map = { "knallbunt":"hue-rotate("+Math.floor(Math.random()*360)+"deg) saturate(1.6)", "rot":"sepia(1) saturate(6) hue-rotate(-30deg)", "grün":"sepia(1) saturate(5) hue-rotate(60deg)", "blau":"sepia(1) saturate(6) hue-rotate(160deg)", "normal":"none" };
   actor().style.filter = map[v]||"none";
@@ -489,16 +493,17 @@ async function runProgram(){
 
   try{ await runList(state.tree, token); }catch(e){ console.warn(e); }
 
-  finishRun();
+  finishRun(token);
 }
-function finishRun(){
+function finishRun(token){
+  if(token!==state.runToken) return; // veralteter Interpreter (nach Stopp/Neustart) darf UI nicht mehr anfassen
   state.running=false; state.ranOnce=true;
   document.getElementById("btnRun").style.display="flex";
   document.getElementById("btnStop").style.display="none";
   document.getElementById("actor").classList.remove("running");
   clearRunningMarks();
 }
-function stopProgram(){ state.runToken++; finishRun(); hideSpeech(); }
+function stopProgram(){ state.runToken++; finishRun(state.runToken); hideSpeech(); }
 
 function clearRunningMarks(){ document.querySelectorAll(".block.running,.cblock.running").forEach(e=>e.classList.remove("running")); }
 function markRunning(id){
@@ -598,7 +603,9 @@ function hasIfWithChild(){ return anyNode(n=> n.type==="if" && n.children && n.c
 function sayHasVar(){ return anyNode(n=> (n.type==="say"||n.type==="think") && /\{\s*[Pp]unkte\s*\}/.test(n.params.text||"")); }
 function anyNode(fn, list){ list=list||state.tree; for(const n of list){ if(fn(n))return true; if(n.children&&anyNode(fn,n.children))return true; } return false; }
 
+let missionAdvT=null;
 function renderMission(){
+  clearTimeout(missionAdvT); missionAdvT=null;
   const m = MISSIONS[state.mission];
   const bar = document.getElementById("missionbar");
   bar.innerHTML = `
@@ -625,7 +632,7 @@ function checkMission(){
     if(state.mission>=MISSIONS.length-1){ fb.textContent="🏆 Alle Level geschafft! Du hast die Grundlagen drauf. Weiter quatschen!"; }
     else {
       fb.textContent="✅ Geschafft! Weiter zum nächsten Level.";
-      setTimeout(()=>{ state.mission++; renderMission(); saveLocal(); }, 1100);
+      if(!missionAdvT) missionAdvT=setTimeout(()=>{ missionAdvT=null; state.mission++; renderMission(); saveLocal(); }, 1100);
     }
     confetti(); playSound("Tada");
   } else {
